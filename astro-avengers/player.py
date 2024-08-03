@@ -47,3 +47,11 @@ class Player:
             missile.update()
             if missile.rect.bottom < 0:
                 self.missiles.remove(missile)
+
+
+    def draw(self, screen):
+        screen.blit(self.image, self.rect)
+        for bullet in self.bullets:
+            bullet.draw(screen)
+        for missile in self.missiles:
+            missile.draw(screen)
