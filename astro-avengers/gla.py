@@ -67,7 +67,7 @@ class Ammunition:
 def check_gla_collisions(player, shields, lives, ammunitions):
     for shield in shields:
         if player.rect.colliderect(shield.rect):
-            player.shield += 1
+            player.shield = True
             shields.remove(shield)
     
     for life in lives:
@@ -79,3 +79,5 @@ def check_gla_collisions(player, shields, lives, ammunitions):
         if player.rect.colliderect(ammunition.rect):
             player.ammunition += 1
             ammunitions.remove(ammunition)
+
+    

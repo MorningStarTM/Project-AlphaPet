@@ -12,6 +12,8 @@ class Player:
         self.bullets = []
         self.missiles = []
         self.life = 3
+        self.ammunition = 500
+        self.shield = False
 
     
     def move(self, dx, dy):

@@ -1,6 +1,7 @@
 import pygame
 import os
 from player import Player
+from gla import Ammunition, Life, Shield, check_gla_collisions
 
 # Initialize Pygame
 pygame.init()
@@ -80,5 +81,64 @@ def main():
 
     pygame.quit()
 
+def main2():
+    clock = pygame.time.Clock()
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("Astro Avenger - GLA Test")
+
+    player = Player()
+    shields = [Shield() for _ in range(3)]
+    lives = [Life() for _ in range(3)]
+    ammunitions = [Ammunition() for _ in range(3)]
+    running = True
+    
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        
+        keys = pygame.key.get_pressed()
+        dx, dy = 0, 0
+        if keys[pygame.K_LEFT]:
+            dx = -player.speed
+        if keys[pygame.K_RIGHT]:
+            dx = player.speed
+        if keys[pygame.K_UP]:
+            dy = -player.speed
+        if keys[pygame.K_DOWN]:
+            dy = player.speed
+        player.move(dx, dy)
+        
+        player.update()
+        for shield in shields:
+            shield.update()
+            if shield.rect.top > SCREEN_HEIGHT:
+                shield.reset_position()
+        for life in lives:
+            life.update()
+            if life.rect.top > SCREEN_HEIGHT:
+                life.reset_position()
+        for ammunition in ammunitions:
+            ammunition.update()
+            if ammunition.rect.top > SCREEN_HEIGHT:
+                ammunition.reset_position()
+        
+        check_gla_collisions(player, shields, lives, ammunitions)
+        
+        screen.fill((0, 0, 0))
+        player.draw(screen)
+        for shield in shields:
+            shield.draw(screen)
+        for life in lives:
+            life.draw(screen)
+        for ammunition in ammunitions:
+            ammunition.draw(screen)
+        pygame.display.flip()
+        clock.tick(60)
+
+    pygame.quit()
+
+
+
 if __name__ == "__main__":
-    main()
+    main2()
