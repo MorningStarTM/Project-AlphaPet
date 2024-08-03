@@ -24,3 +24,8 @@ class Player:
             self.rect.top = 0
         if self.rect.bottom > SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
+
+
+    def fire_bullet(self):
+        bullet = Bullet(self.rect.centerx, self.rect.top)
+        self.bullets.append(bullet)
