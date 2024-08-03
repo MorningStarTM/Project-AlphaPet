@@ -1,4 +1,7 @@
-from .const import *
+from const import *
+from bullet import Bullet
+from missile import Missile
+
 
 class Player:
     def __init__(self):
@@ -55,3 +58,15 @@ class Player:
             bullet.draw(screen)
         for missile in self.missiles:
             missile.draw(screen)
+
+
+def check_collisions(player, enemies, enemy_bullets):
+    for enemy in enemies:
+        if player.rect.colliderect(enemy.rect):
+            player.life -= 1
+            enemies.remove(enemy)
+    
+    for bullet in enemy_bullets:
+        if player.rect.colliderect(bullet.rect):
+            player.life -= 1
+            enemy_bullets.remove(bullet)

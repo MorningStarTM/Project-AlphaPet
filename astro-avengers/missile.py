@@ -1,4 +1,4 @@
-from .const import *
+from const import *
 
 class Missile:
     def __init__(self, x, y):
