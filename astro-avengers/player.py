@@ -33,3 +33,17 @@ class Player:
     def launch_missile(self):
         missile = Missile(self.rect.centerx, self.rect.top)
         self.missiles.append(missile)
+
+    
+    def update(self):
+        # Update bullets
+        for bullet in self.bullets:
+            bullet.update()
+            if bullet.rect.bottom < 0:
+                self.bullets.remove(bullet)
+        
+        # Update missiles
+        for missile in self.missiles:
+            missile.update()
+            if missile.rect.bottom < 0:
+                self.missiles.remove(missile)
