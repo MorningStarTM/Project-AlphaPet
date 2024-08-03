@@ -29,3 +29,7 @@ class Player:
     def fire_bullet(self):
         bullet = Bullet(self.rect.centerx, self.rect.top)
         self.bullets.append(bullet)
+
+    def launch_missile(self):
+        missile = Missile(self.rect.centerx, self.rect.top)
+        self.missiles.append(missile)
