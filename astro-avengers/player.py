@@ -11,4 +11,16 @@ class Player:
         self.life = 3
 
     
-    
+    def move(self, dx, dy):
+        self.rect.x += dx
+        self.rect.y += dy
+
+        # Ensure the player stays within the screen bounds
+        if self.rect.left < 0:
+            self.rect.left = 0
+        if self.rect.right > SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
+        if self.rect.top < 0:
+            self.rect.top = 0
+        if self.rect.bottom > SCREEN_HEIGHT:
+            self.rect.bottom = SCREEN_HEIGHT
