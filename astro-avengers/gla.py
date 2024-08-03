@@ -60,3 +60,22 @@ class Ammunition:
     def reset_position(self):
         self.rect.x = random.randint(0, SCREEN_WIDTH - self.rect.width)
         self.rect.y = random.randint(-100, -40)
+
+
+
+
+def check_gla_collisions(player, shields, lives, ammunitions):
+    for shield in shields:
+        if player.rect.colliderect(shield.rect):
+            player.shield += 1
+            shields.remove(shield)
+    
+    for life in lives:
+        if player.rect.colliderect(life.rect):
+            player.life += 1
+            lives.remove(life)
+    
+    for ammunition in ammunitions:
+        if player.rect.colliderect(ammunition.rect):
+            player.ammunition += 1
+            ammunitions.remove(ammunition)
