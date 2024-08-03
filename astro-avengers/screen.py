@@ -1,5 +1,6 @@
 import pygame
 import os
+from player import Player
 
 # Initialize Pygame
 pygame.init()
@@ -43,14 +44,37 @@ class Screen:
 def main():
     clock = pygame.time.Clock()
     screen = Screen()
+    player = Player()
     running = True
     
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    player.fire_bullet()
+                elif event.key == pygame.K_LCTRL or event.key == pygame.K_RCTRL:
+                    player.launch_missile()
+        
+        keys = pygame.key.get_pressed()
+        dx, dy = 0, 0
+        if keys[pygame.K_LEFT]:
+            dx = -player.speed
+        if keys[pygame.K_RIGHT]:
+            dx = player.speed
+        if keys[pygame.K_UP]:
+            dy = -player.speed
+        if keys[pygame.K_DOWN]:
+            dy = player.speed
+        player.move(dx, dy)
+        
+        player.update()
         screen.update_screen()
+        
+        screen.screen.fill((0, 0, 0))
+        screen.draw_background()
+        player.draw(screen.screen)
         pygame.display.flip()
         clock.tick(60)
 
