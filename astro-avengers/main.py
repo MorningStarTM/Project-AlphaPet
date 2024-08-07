@@ -1,4 +1,4 @@
-from screen import main2
+from screen import main2, main3
 
 
-main2()
+main3()
