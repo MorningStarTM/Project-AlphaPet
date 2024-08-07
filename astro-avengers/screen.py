@@ -2,13 +2,12 @@ import pygame
 import os
 from player import Player
 from gla import Ammunition, Life, Shield, check_gla_collisions
-
+from const import *
 # Initialize Pygame
 pygame.init()
 
 # Screen dimensions
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+
 
 # Load the background image
 BACKGROUND_IMAGE = pygame.image.load("assets\\screen\\bg.png")
@@ -18,21 +17,34 @@ class Screen:
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption("Astro Avenger")
         
+        # Load the background image and create a flipped version
+        self.bg_image = pygame.image.load("assets\\screen\\bg.png")
+        self.bg_flipped = pygame.transform.flip(self.bg_image, False, True)
+        
+        # Initialize background positions
         self.bg_y1 = 0
         self.bg_y2 = -SCREEN_HEIGHT
         self.bg_speed = 2
 
     def draw_background(self):
-        self.screen.blit(BACKGROUND_IMAGE, (0, self.bg_y1))
-        self.screen.blit(BACKGROUND_IMAGE, (0, self.bg_y2))
+        # Draw the original image
+        self.screen.blit(self.bg_image, (0, self.bg_y1))
+        # Draw the flipped image
+        self.screen.blit(self.bg_flipped, (0, self.bg_y1 + SCREEN_HEIGHT))
+        
+        # Draw the original image again
+        self.screen.blit(self.bg_image, (0, self.bg_y2))
+        # Draw the flipped image again
+        self.screen.blit(self.bg_flipped, (0, self.bg_y2 + SCREEN_HEIGHT))
 
     def move_background(self):
         self.bg_y1 += self.bg_speed
         self.bg_y2 += self.bg_speed
+        
         if self.bg_y1 >= SCREEN_HEIGHT:
-            self.bg_y1 = -SCREEN_HEIGHT
+            self.bg_y1 = self.bg_y2 - SCREEN_HEIGHT
         if self.bg_y2 >= SCREEN_HEIGHT:
-            self.bg_y2 = -SCREEN_HEIGHT
+            self.bg_y2 = self.bg_y1 - SCREEN_HEIGHT
 
     def update_screen(self):
         self.move_background()
@@ -40,6 +52,27 @@ class Screen:
 
 
 
+def draw_hud(screen, player):
+    hud_rect = pygame.Rect(SCREEN_WIDTH - HUD_WIDTH, 0, HUD_WIDTH, SCREEN_HEIGHT)
+    pygame.draw.rect(screen, LIGHT_GRAY, hud_rect)
+
+    # Draw health bar
+    health_bar_rect = pygame.Rect(SCREEN_WIDTH - HUD_WIDTH + 10, 10, 180, 20)
+    pygame.draw.rect(screen, (255, 0, 0), health_bar_rect)
+    pygame.draw.rect(screen, (0, 255, 0), (SCREEN_WIDTH - HUD_WIDTH + 10, 10, player.life * 60, 20))
+
+    # Draw shield bar
+    shield_bar_rect = pygame.Rect(SCREEN_WIDTH - HUD_WIDTH + 10, 40, 180, 20)
+    pygame.draw.rect(screen, (0, 0, 255), shield_bar_rect)
+    pygame.draw.rect(screen, (0, 255, 255), (SCREEN_WIDTH - HUD_WIDTH + 10, 40, player.shield * 60, 20))
+
+    # Draw missile count
+    missile_text = pygame.font.SysFont(None, 24).render(f"Missiles: {player.ammunition}", True, BLACK)
+    screen.blit(missile_text, (SCREEN_WIDTH - HUD_WIDTH + 10, 70))
+
+    # Draw special bullet count (Placeholder for implementation)
+    special_bullet_text = pygame.font.SysFont(None, 24).render("Special Bullets: 0", True, BLACK)
+    screen.blit(special_bullet_text, (SCREEN_WIDTH - HUD_WIDTH + 10, 100))
 
 
 def main():
@@ -53,9 +86,9 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_LCTRL:
                     player.fire_bullet()
-                elif event.key == pygame.K_LCTRL or event.key == pygame.K_RCTRL:
+                elif event.key == pygame.K_SPACE or event.key == pygame.K_RCTRL:
                     player.launch_missile()
         
         keys = pygame.key.get_pressed()
@@ -76,6 +109,10 @@ def main():
         screen.screen.fill((0, 0, 0))
         screen.draw_background()
         player.draw(screen.screen)
+        draw_hud(screen.screen, player)
+
+
+
         pygame.display.flip()
         clock.tick(60)
 
