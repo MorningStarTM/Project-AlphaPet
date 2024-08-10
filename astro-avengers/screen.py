@@ -1,7 +1,7 @@
 import pygame
 import os
 from player import Player
-from enemyflight import EnemyFlight
+from enemyflight import EnemyFlight, DummyEnemyFlight, EnemyGroup
 from gla import Ammunition, Life, Shield, check_gla_collisions
 from const import *
 
@@ -260,7 +260,7 @@ def main4():
     player = Player()
     running = True
     
-    enemies = [EnemyFlight() for _ in range(5)]
+    enemies = [DummyEnemyFlight(player) for _ in range(5)]
 
     while running:
         for event in pygame.event.get():
@@ -324,6 +324,78 @@ def main4():
         # Draw the HUD
         draw_hud(screen.screen, player)
 
+        pygame.display.flip()
+        clock.tick(60)
+
+    pygame.quit()
+
+
+def main5():
+    pygame.init()
+    clock = pygame.time.Clock()
+    
+    # Initialize the screen and game elements
+    screen = Screen()
+    player = Player()
+    enemy_group = EnemyGroup(player)  # Assuming you have this implemented
+    
+    running = True
+
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LCTRL:
+                    player.fire_bullet()
+                elif event.key == pygame.K_SPACE or event.key == pygame.K_RCTRL:
+                    player.launch_missile()
+
+        # Handle player movement
+        keys = pygame.key.get_pressed()
+        dx, dy = 0, 0
+        if keys[pygame.K_LEFT]:
+            dx = -player.speed
+        if keys[pygame.K_RIGHT]:
+            dx = player.speed
+        if keys[pygame.K_UP]:
+            dy = -player.speed
+        if keys[pygame.K_DOWN]:
+            dy = player.speed
+        player.move(dx, dy)
+        
+        # Update game elements
+        player.update()
+        enemy_group.update()  # Update enemy group
+        
+        # Check for collisions
+        for bullet in player.bullets:
+            for enemy in enemy_group.enemies:
+                if enemy.collide(bullet):
+                    player.bullets.remove(bullet)
+                    break
+        
+        for missile in player.missiles:
+            for enemy in enemy_group.enemies:
+                if enemy.collide(missile):
+                    player.missiles.remove(missile)
+                    break
+        
+        # Clear screen
+        screen.screen.fill((0, 0, 0))
+        
+        # Update background and draw it
+        screen.update_screen()
+        
+        # Draw game elements
+        for enemy in enemy_group.enemies:
+            enemy.draw(screen.screen)
+        
+        player.draw(screen.screen)
+        
+        # Draw HUD
+        draw_hud(screen.screen, player)
+        
         pygame.display.flip()
         clock.tick(60)
 
