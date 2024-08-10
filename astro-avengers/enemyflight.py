@@ -7,65 +7,61 @@ from bullet import EnemyBullet
 import math
 
 
-class EnemyFlight(Player):
-    def __init__(self):
-        super().__init__()
-        # Load enemy-specific image
-        self.image = ENEMY_FLIGHT_IMAGE  # Replace with your enemy image
+class EnemyFlight:
+    def __init__(self, player):
+        self.image = ENEMY_FLIGHT_IMAGE
         self.rect = self.image.get_rect()
         self.rect.x = random.randint(0, SCREEN_WIDTH - self.rect.width)
-        self.rect.y = random.randint(-200, -50)  # Start above the screen
-        self.speed = 3  # Speed of the enemy
-        self.health = 100  # Set initial health
+        self.rect.y = random.randint(-200, -50)
+        self.speed = 3
+        self.health = 100
         self.shoot_timer = 0
-        self.shoot_interval = 60  # Time between shots in frames
+        self.shoot_interval = 60
         self.bullets = []
+        self.player = player  # Pass the player to the enemy
 
     def move(self):
-        # Move the enemy down the screen
-        self.rect.y += self.speed
+        # Move towards the player
+        dx = self.player.rect.centerx - self.rect.centerx
+        dy = self.player.rect.centery - self.rect.centery
+        distance = math.hypot(dx, dy)
+        if distance > 0:
+            dx /= distance
+            dy /= distance
+        self.rect.x += dx * self.speed
+        self.rect.y += dy * self.speed
 
-        # If the enemy moves off the bottom of the screen, reset its position
-        if self.rect.top > SCREEN_HEIGHT:
-            self.rect.x = random.randint(0, SCREEN_WIDTH - self.rect.width)
-            self.rect.y = random.randint(-200, -50)
+        # Boundaries
+        if self.rect.left < 0:
+            self.rect.left = 0
+        if self.rect.right > SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
+        if self.rect.top < 0:
+            self.rect.top = 0
+        if self.rect.bottom > SCREEN_HEIGHT:
+            self.rect.bottom = SCREEN_HEIGHT
+
+    def shoot(self):
+        if self.shoot_timer <= 0:
+            bullet = EnemyBullet(self.rect.centerx, self.rect.bottom)
+            self.bullets.append(bullet)
+            self.shoot_timer = self.shoot_interval
+        else:
+            self.shoot_timer -= 1
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
-
         for bullet in self.bullets:
             bullet.draw(screen)
 
-        # Draw health bar
-        if self.health > 0:
-            health_bar_width = 40
-            health_bar_height = 5
-            health_bar_x = self.rect.centerx - health_bar_width // 2
-            health_bar_y = self.rect.top - 10
-
-            # Draw the background of the health bar
-            pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
-            # Draw the current health of the enemy
-            pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 100) * health_bar_width, health_bar_height))
-
-    def update(self):
+    def update(self, player):
         self.move()
-        # Update bullets
-        
+        self.shoot()
         for bullet in self.bullets:
             bullet.update()
             if bullet.rect.bottom < 0:
                 self.bullets.remove(bullet)
-
-    def fire_bullet(self):
-        bullet = EnemyBullet(self.rect.centerx, self.rect.top)
-        self.bullets.append(bullet)
-
-    def collide(self, bullet):
-        if self.rect.colliderect(bullet.rect):
-            self.health -= 10  # Reduce health for each collision
-            return True
-        return False
+        self.player = player  # Update player reference if needed
     
 
 
@@ -149,3 +145,18 @@ class DummyEnemyFlight:
             self.health -= 10  # Reduce health for each collision
             return True
         return False
+    
+
+
+
+class EnemyGroup:
+    def __init__(self, player):
+        self.player = player
+        self.enemies = self.create_group()
+        self.spawn_timer = 0
+        self.spawn_interval = 300  # Frames between each spawn
+
+    def create_group(self):
+        return [DummyEnemyFlight(self.player) for _ in range(5)]
+
+    
