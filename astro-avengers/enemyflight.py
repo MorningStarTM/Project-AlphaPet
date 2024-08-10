@@ -159,4 +159,21 @@ class EnemyGroup:
     def create_group(self):
         return [DummyEnemyFlight(self.player) for _ in range(5)]
 
-    
+    def manage_spawn(self):
+        self.spawn_timer += 1
+        if self.spawn_timer >= self.spawn_interval:
+            self.spawn_timer = 0
+            self.enemies = self.create_group()
+
+    def update(self):
+        for enemy in self.enemies:
+            enemy.update()
+            # Check if enemy is off-screen or other conditions
+            if enemy.rect.top > SCREEN_HEIGHT:
+                self.enemies.remove(enemy)
+                # Optionally: Add new enemies to keep the group size constant
+                self.enemies.append(DummyEnemyFlight(self.player))
+
+    def draw(self, screen):
+        for enemy in self.enemies:
+            enemy.draw(screen)
