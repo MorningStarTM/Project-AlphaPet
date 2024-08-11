@@ -1,5 +1,6 @@
 import pygame
 import os
+from glob import glob
 
 PLAYER_IMAGE = pygame.image.load("assets\\Player_1\\ship02P0000.png")
 ENEMY_FLIGHT_IMAGE = pygame.image.load("assets\\enemy_1\\Turret09.png")
@@ -19,4 +20,4 @@ BLACK = (0, 0, 0)
 LIGHT_GRAY = (220, 220, 220)
 
 
-LIST_OF_EXPLOSION_IMAGE = [pygame.image.load(i) for i in os.listdir("astro-avengers\\assets\\explosion")]
+LIST_OF_EXPLOSION_IMAGE = [pygame.image.load(i) for i in glob("E:\\github_clone\\Project-AlphaPet\\astro-avengers\\assets\\explosion\\*")]
