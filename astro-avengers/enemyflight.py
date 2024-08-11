@@ -5,7 +5,7 @@ from player import Player  # Import Player class
 import random
 from bullet import EnemyBullet
 import math
-
+from explosion import Explosion
 
 class EnemyFlight:
     def __init__(self, player):
@@ -80,8 +80,14 @@ class DummyEnemyFlight:
         self.shoot_timer = 0
         self.shoot_interval = 60  # Time between shots in frames
         self.bullets = []
+        self.explosion = None  # Explosion attribute
 
     def update(self):
+        if self.explosion:
+            self.explosion.update()
+            if self.explosion.done:
+                return  # Stop updating if explosion is done
+        
         # Calculate the angle to the player
         dx = self.player.rect.centerx - self.rect.centerx
         dy = self.player.rect.centery - self.rect.centery
@@ -116,6 +122,12 @@ class DummyEnemyFlight:
             self.shoot()
             self.shoot_timer = 0
 
+        # Check if health is depleted
+        if self.health <= 0:
+            if not self.explosion:
+                self.explosion = Explosion(self.rect.centerx, self.rect.centery)
+            return  # Skip further update if explosion is active
+
     def rotate(self, angle):
         """ Rotate the enemy image to face the player """
         rotated_image = pygame.transform.rotate(self.original_image, -math.degrees(angle))
@@ -128,6 +140,11 @@ class DummyEnemyFlight:
         self.bullets.append(bullet)
 
     def draw(self, screen):
+        if self.explosion:
+            self.explosion.draw(screen)
+            if self.explosion.done:
+                return  # Stop drawing if explosion is done
+
         screen.blit(self.image, self.rect)
         # Draw health bar
         if self.health > 0:
