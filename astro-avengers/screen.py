@@ -71,7 +71,7 @@ def draw_hud(screen, player):
     pygame.draw.rect(screen, (0, 255, 255), (SCREEN_WIDTH - HUD_WIDTH + 10, 40, player.shield * 60, 20))
 
     # Draw missile count
-    missile_text = pygame.font.SysFont(None, 24).render(f"Missiles: {player.ammunition}", True, BLACK)
+    missile_text = pygame.font.SysFont(None, 24).render(f"Missiles: {player.missile_count}", True, BLACK)
     screen.blit(missile_text, (SCREEN_WIDTH - HUD_WIDTH + 10, 70))
 
     # Draw special bullet count (Placeholder for implementation)
