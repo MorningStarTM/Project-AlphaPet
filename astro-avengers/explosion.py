@@ -1,5 +1,5 @@
 import pygame
-from .const import *
+from const import *
 
 class Explosion:
     def __init__(self, x, y):
