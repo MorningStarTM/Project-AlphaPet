@@ -67,18 +67,19 @@ class EnemyFlight:
 
 
 class DummyEnemyFlight:
-    def __init__(self, player):
+    def __init__(self, player, segment):
         self.image = ENEMY_FLIGHT_IMAGE
         self.original_image = self.image.copy()  # Keep the original image for rotation
         self.rect = self.image.get_rect()
-        self.rect.x = random.randint(0, SCREEN_WIDTH - self.rect.width)
-        self.rect.y = random.randint(-200, -50)  # Start above the screen
+        self.segment = segment  # Segment that the enemy is restricted to
+        self.player = player  # Store reference to the player
+        self.rect.x = random.randint(segment.left, segment.right - self.rect.width)
+        self.rect.y = random.randint(segment.top, segment.bottom - self.rect.height)
         self.speed = 3  # Speed of the enemy
         self.health = 100  # Set initial health
         self.shoot_timer = 0
         self.shoot_interval = 60  # Time between shots in frames
         self.bullets = []
-        self.player = player  # Store reference to the player
 
     def update(self):
         # Calculate the angle to the player
@@ -90,18 +91,18 @@ class DummyEnemyFlight:
         self.rect.x += math.cos(angle) * self.speed
         self.rect.y += math.sin(angle) * self.speed
         
-        # Ensure the enemy stays within the screen bounds
-        if self.rect.left < 0:
-            self.rect.left = 0
-        if self.rect.right > SCREEN_WIDTH:
-            self.rect.right = SCREEN_WIDTH
-        if self.rect.top < 0:
-            self.rect.top = 0
-        if self.rect.bottom > SCREEN_HEIGHT:
-            self.rect.bottom = SCREEN_HEIGHT
+        # Ensure the enemy stays within its segment
+        if self.rect.left < self.segment.left:
+            self.rect.left = self.segment.left
+        if self.rect.right > self.segment.right:
+            self.rect.right = self.segment.right
+        if self.rect.top < self.segment.top:
+            self.rect.top = self.segment.top
+        if self.rect.bottom > self.segment.bottom:
+            self.rect.bottom = self.segment.bottom
         
         # Rotate the image to face the player
-        self.rotate(angle-90)
+        self.rotate(angle - math.pi / 2)
         
         # Update bullets
         for bullet in self.bullets:
@@ -145,34 +146,46 @@ class DummyEnemyFlight:
             self.health -= 10  # Reduce health for each collision
             return True
         return False
-    
 
+LEFT_SEGMENT = pygame.Rect(0, 0, SCREEN_WIDTH // 3, SCREEN_HEIGHT)
+CENTER_SEGMENT = pygame.Rect(SCREEN_WIDTH // 3, 0, SCREEN_WIDTH // 3, SCREEN_HEIGHT)
+RIGHT_SEGMENT = pygame.Rect(2 * SCREEN_WIDTH // 3, 0, SCREEN_WIDTH // 3, SCREEN_HEIGHT)
 
+SEGMENTS = [LEFT_SEGMENT, CENTER_SEGMENT, RIGHT_SEGMENT]
 
 class EnemyGroup:
     def __init__(self, player):
         self.player = player
+        self.segments = SEGMENTS  # Segments to allocate enemies
         self.enemies = self.create_group()
         self.spawn_timer = 0
         self.spawn_interval = 300  # Frames between each spawn
 
     def create_group(self):
-        return [DummyEnemyFlight(self.player) for _ in range(5)]
+        # Shuffle segments and create enemies in segments
+        random.shuffle(self.segments)
+        return [DummyEnemyFlight(self.player, self.segments[i % len(self.segments)]) for i in range(5)]
 
     def manage_spawn(self):
         self.spawn_timer += 1
         if self.spawn_timer >= self.spawn_interval:
             self.spawn_timer = 0
-            self.enemies = self.create_group()
+            # Optionally: Remove off-screen enemies and add new enemies
+            self.enemies = [enemy for enemy in self.enemies if enemy.rect.top <= SCREEN_HEIGHT]
+            while len(self.enemies) < 5:
+                segment = random.choice(self.segments)
+                self.enemies.append(DummyEnemyFlight(self.player, segment))
 
     def update(self):
+        self.manage_spawn()  # Manage enemy spawning
         for enemy in self.enemies:
             enemy.update()
             # Check if enemy is off-screen or other conditions
             if enemy.rect.top > SCREEN_HEIGHT:
                 self.enemies.remove(enemy)
                 # Optionally: Add new enemies to keep the group size constant
-                self.enemies.append(DummyEnemyFlight(self.player))
+                segment = random.choice(self.segments)
+                self.enemies.append(DummyEnemyFlight(self.player, segment))
 
     def draw(self, screen):
         for enemy in self.enemies:
