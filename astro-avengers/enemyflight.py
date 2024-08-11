@@ -74,20 +74,22 @@ class DummyEnemyFlight:
         self.segment = segment  # Segment that the enemy is restricted to
         self.player = player  # Store reference to the player
         self.rect.x = random.randint(segment.left, segment.right - self.rect.width)
-        self.rect.y = 0#random.randint(segment.top, segment.bottom - self.rect.height)
+        self.rect.y = 0  # Start at the top of the segment
         self.speed = 3  # Speed of the enemy
         self.health = 100  # Set initial health
         self.shoot_timer = 0
         self.shoot_interval = 60  # Time between shots in frames
         self.bullets = []
         self.explosion = None  # Explosion attribute
-        
+        self.is_dead = False  # Flag to mark the enemy as dead
 
     def update(self):
-        if self.explosion:
-            self.explosion.update()
-            if self.explosion.done:
-                return  # Stop updating if explosion is done
+        if self.is_dead:
+            if self.explosion:
+                self.explosion.update()
+                if self.explosion.done:
+                    return  # Stop updating if explosion is done
+            return  # Skip further update if the enemy is dead
         
         # Calculate the angle to the player
         dx = self.player.rect.centerx - self.rect.centerx
@@ -125,9 +127,13 @@ class DummyEnemyFlight:
 
         # Check if health is depleted
         if self.health <= 0:
-            if not self.explosion:
-                self.explosion = Explosion(self.rect.centerx, self.rect.centery)
-            return  # Skip further update if explosion is active
+            self.trigger_explosion()
+
+    def trigger_explosion(self):
+        """Trigger the explosion immediately and mark the enemy as dead"""
+        if not self.explosion:
+            self.explosion = Explosion(self.rect.centerx, self.rect.centery)
+            self.is_dead = True  # Set the flag to indicate the enemy is dead
 
     def rotate(self, angle):
         """ Rotate the enemy image to face the player """
@@ -188,8 +194,8 @@ class EnemyGroup:
         self.spawn_timer += 1
         if self.spawn_timer >= self.spawn_interval:
             self.spawn_timer = 0
-            # Optionally: Remove off-screen enemies and add new enemies
-            self.enemies = [enemy for enemy in self.enemies if enemy.rect.top <= SCREEN_HEIGHT]
+            # Remove off-screen and dead enemies, and add new enemies
+            self.enemies = [enemy for enemy in self.enemies if not enemy.is_dead]
             while len(self.enemies) < 5:
                 segment = random.choice(self.segments)
                 self.enemies.append(DummyEnemyFlight(self.player, segment))
@@ -198,8 +204,8 @@ class EnemyGroup:
         self.manage_spawn()  # Manage enemy spawning
         for enemy in self.enemies:
             enemy.update()
-            # Check if enemy is off-screen or other conditions
-            if enemy.rect.top > SCREEN_HEIGHT:
+            # Check if enemy is off-screen
+            if enemy.rect.top > SCREEN_HEIGHT and not enemy.is_dead:
                 self.enemies.remove(enemy)
                 # Optionally: Add new enemies to keep the group size constant
                 segment = random.choice(self.segments)
