@@ -74,13 +74,14 @@ class DummyEnemyFlight:
         self.segment = segment  # Segment that the enemy is restricted to
         self.player = player  # Store reference to the player
         self.rect.x = random.randint(segment.left, segment.right - self.rect.width)
-        self.rect.y = random.randint(segment.top, segment.bottom - self.rect.height)
+        self.rect.y = 0#random.randint(segment.top, segment.bottom - self.rect.height)
         self.speed = 3  # Speed of the enemy
         self.health = 100  # Set initial health
         self.shoot_timer = 0
         self.shoot_interval = 60  # Time between shots in frames
         self.bullets = []
         self.explosion = None  # Explosion attribute
+        
 
     def update(self):
         if self.explosion:
