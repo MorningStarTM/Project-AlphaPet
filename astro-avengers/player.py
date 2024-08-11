@@ -14,6 +14,7 @@ class Player:
         self.life = 3
         self.ammunition = 500
         self.shield = False
+        self.missile_count = 10
 
     
     def move(self, dx, dy):
@@ -36,8 +37,10 @@ class Player:
         self.bullets.append(bullet)
 
     def launch_missile(self):
-        missile = Missile(self.rect.centerx, self.rect.top)
-        self.missiles.append(missile)
+        if self.missile_count != 0:
+            missile = Missile(self.rect.centerx, self.rect.top)
+            self.missiles.append(missile)
+            self.missile_count -= 1
 
     
     def update(self):
@@ -52,6 +55,7 @@ class Player:
             missile.update()
             if missile.rect.bottom < 0:
                 self.missiles.remove(missile)
+                
 
 
     def draw(self, screen):
