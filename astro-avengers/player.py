@@ -15,6 +15,7 @@ class Player:
         self.ammunition = 500
         self.shield = False
         self.missile_count = 10
+        self.health = 100
 
     
     def move(self, dx, dy):
