@@ -140,3 +140,19 @@ class DecepticonGroup:
             while len(self.enemies) < 5:
                 segment = random.choice(self.segments)
                 self.enemies.append(Decepticon(self.player, segment))
+
+    
+    def update(self):
+        self.manage_spawn()  # Manage enemy spawning
+        for enemy in self.enemies:
+            enemy.update()
+            # Check if enemy is off-screen
+            if enemy.rect.top > SCREEN_HEIGHT and not enemy.is_dead:
+                self.enemies.remove(enemy)
+                # Optionally: Add new enemies to keep the group size constant
+                segment = random.choice(self.segments)
+                self.enemies.append(Decepticon(self.player, segment))
+
+    def draw(self, screen):
+        for enemy in self.enemies:
+            enemy.draw(screen)
