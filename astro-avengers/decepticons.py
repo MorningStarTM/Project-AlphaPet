@@ -82,3 +82,8 @@ class Decepticon:
         rotated_image = pygame.transform.rotate(self.original_image, -math.degrees(angle))
         self.rect = rotated_image.get_rect(center=self.rect.center)  # Adjust rect position
         self.image = rotated_image
+
+    def shoot(self):
+        # Create an enemy bullet aimed at the player's position
+        bullet = EnemyBullet(self.rect.centerx, self.rect.bottom)
+        self.bullets.append(bullet)
