@@ -16,7 +16,7 @@ class Decepticon:
         self.rect.x = random.randint(segment.left, segment.right - self.rect.width)
         self.rect.y = 0  # Start at the top of the segment
         self.speed = 3  # Speed of the enemy
-        self.health = 200  # Set initial health
+        self.health = 100  # Set initial health
         self.shoot_timer = 0
         self.shoot_interval = 60  # Time between shots in frames
         self.bullets = []
@@ -97,10 +97,10 @@ class Decepticon:
         screen.blit(self.image, self.rect)
         # Draw health bar
         if self.health > 0:
-            health_bar_width = 40
+            health_bar_width = 70
             health_bar_height = 5
             health_bar_x = self.rect.centerx - health_bar_width // 2
-            health_bar_y = self.rect.top - 10
+            health_bar_y = self.rect.top - 5
 
             # Draw the background of the health bar
             pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
@@ -110,7 +110,7 @@ class Decepticon:
     
     def collide(self, bullet):
         if self.rect.colliderect(bullet.rect):
-            self.health -= 10  # Reduce health for each collision
+            self.health -= 5  # Reduce health for each collision
             return True
         return False
     
@@ -123,12 +123,12 @@ class DecepticonGroup:
         self.segments = SEGMENTS  # Segments to allocate enemies
         self.enemies = self.create_group()
         self.spawn_timer = 0
-        self.spawn_interval = 300  # Frames between each spawn
+        self.spawn_interval = 600  # Frames between each spawn
 
     def create_group(self):
         # Shuffle segments and create enemies in segments
         random.shuffle(self.segments)
-        return [Decepticon(self.player, self.segments[i % len(self.segments)]) for i in range(5)]
+        return [Decepticon(self.player, self.segments[i % len(self.segments)]) for i in range(3)]
     
 
     def manage_spawn(self):
