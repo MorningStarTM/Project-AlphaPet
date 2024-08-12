@@ -24,4 +24,48 @@ class Decepticon:
         self.is_dead = False  # Flag to mark the enemy as dead
 
 
-    
+    def update(self):
+        if self.is_dead:
+            if self.explosion:
+                self.explosion.update()
+                if self.explosion.done:
+                    return  # Stop updating if explosion is done
+            return  # Skip further update if the enemy is dead
+        
+        # Calculate the angle to the player
+        dx = self.player.rect.centerx - self.rect.centerx
+        dy = self.player.rect.centery - self.rect.centery
+        angle = math.atan2(dy, dx)
+        
+        # Update the position based on the angle
+        self.rect.x += math.cos(angle) * self.speed
+        self.rect.y += math.sin(angle) * self.speed
+        
+        # Ensure the enemy stays within its segment
+        if self.rect.left < self.segment.left:
+            self.rect.left = self.segment.left
+        if self.rect.right > self.segment.right:
+            self.rect.right = self.segment.right
+        if self.rect.top < self.segment.top:
+            self.rect.top = self.segment.top
+        if self.rect.bottom > self.segment.bottom:
+            self.rect.bottom = self.segment.bottom
+        
+        # Rotate the image to face the player
+        self.rotate(angle - math.pi / 2)
+        
+        # Update bullets
+        for bullet in self.bullets:
+            bullet.update()
+            if bullet.rect.bottom < 0:
+                self.bullets.remove(bullet)
+
+        # Handle shooting
+        self.shoot_timer += 1
+        if self.shoot_timer >= self.shoot_interval:
+            self.shoot()
+            self.shoot_timer = 0
+
+        # Check if health is depleted
+        if self.health <= 0:
+            self.trigger_explosion()
