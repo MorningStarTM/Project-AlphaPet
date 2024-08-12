@@ -69,3 +69,10 @@ class Decepticon:
         # Check if health is depleted
         if self.health <= 0:
             self.trigger_explosion()
+
+
+    def trigger_explosion(self):
+        """Trigger the explosion immediately and mark the enemy as dead"""
+        if not self.explosion:
+            self.explosion = Explosion(self.rect.centerx, self.rect.centery)
+            self.is_dead = True  # Set the flag to indicate the enemy is dead
