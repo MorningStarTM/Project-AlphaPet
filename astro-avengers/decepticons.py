@@ -113,3 +113,14 @@ class Decepticon:
             self.health -= 10  # Reduce health for each collision
             return True
         return False
+    
+
+
+
+class DecepticonGroup:
+    def __init__(self, player):
+        self.player = player
+        self.segments = SEGMENTS  # Segments to allocate enemies
+        self.enemies = self.create_group()
+        self.spawn_timer = 0
+        self.spawn_interval = 300  # Frames between each spawn
