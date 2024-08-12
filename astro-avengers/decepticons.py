@@ -76,3 +76,9 @@ class Decepticon:
         if not self.explosion:
             self.explosion = Explosion(self.rect.centerx, self.rect.centery)
             self.is_dead = True  # Set the flag to indicate the enemy is dead
+
+    def rotate(self, angle):
+        """ Rotate the enemy image to face the player """
+        rotated_image = pygame.transform.rotate(self.original_image, -math.degrees(angle))
+        self.rect = rotated_image.get_rect(center=self.rect.center)  # Adjust rect position
+        self.image = rotated_image
