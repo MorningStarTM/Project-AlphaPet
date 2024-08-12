@@ -124,3 +124,8 @@ class DecepticonGroup:
         self.enemies = self.create_group()
         self.spawn_timer = 0
         self.spawn_interval = 300  # Frames between each spawn
+
+    def create_group(self):
+        # Shuffle segments and create enemies in segments
+        random.shuffle(self.segments)
+        return [Decepticon(self.player, self.segments[i % len(self.segments)]) for i in range(5)]
