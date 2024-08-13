@@ -157,14 +157,39 @@ class ScrapperGroup:
     def __init__(self, player):
         self.player = player
         self.segments = SEGMENTS  # Segments to allocate enemies
-        self.enemies = self.create_group()
+        self.enemies = []
         self.spawn_timer = 0
         self.spawn_interval = 300  # Frames between each spawn
+        self.min_distance = 50  # Minimum distance between scrappers
+        self.arc_radius = 150  # Radius of the arc shape
+        self.arc_center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)  # Center of the arc
+        
+        self.initialize_scrappers()
 
     def create_group(self):
         # Shuffle segments and create enemies in segments
         random.shuffle(self.segments)
-        return [Scrapper(self.player, self.segments[i % len(self.segments)]) for i in range(5)]
+        return [Scrapper(self.player, self.segments[i % len(self.segments)]) for i in range(10)]
+    
+    def initialize_scrappers(self):
+        """Initialize scrappers in an arc shape."""
+        num_scrappers = 5  # Number of scrappers in the group
+        angle_step = 360 / num_scrappers
+        
+        for i in range(num_scrappers):
+            angle = math.radians(i * angle_step)
+            x = self.arc_center[0] + self.arc_radius * math.cos(angle)
+            y = self.arc_center[1] + self.arc_radius * math.sin(angle)
+            
+            # Choose a segment for each scrapper
+            segment = random.choice(self.segments)
+            scrapper = Scrapper(self.player, segment)
+            scrapper.rect.center = (x, y)
+            self.enemies.append(scrapper)
+
+    
+    
+
 
     def manage_spawn(self):
         self.spawn_timer += 1
@@ -178,6 +203,7 @@ class ScrapperGroup:
 
     def update(self):
         self.manage_spawn()  # Manage enemy spawning
+        
         for enemy in self.enemies:
             enemy.update()
             # Check if enemy is off-screen
@@ -185,7 +211,11 @@ class ScrapperGroup:
                 self.enemies.remove(enemy)
                 # Optionally: Add new enemies to keep the group size constant
                 segment = random.choice(self.segments)
-                self.enemies.append(Scrapper(self.player, segment))
+                new_scrapper = Scrapper(self.player, segment)
+                self.enemies.append(new_scrapper)
+        
+        # Maintain distance between scrappers
+        self.maintain_distance()
 
     def draw(self, screen):
         for enemy in self.enemies:
