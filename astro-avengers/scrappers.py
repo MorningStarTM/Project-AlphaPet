@@ -29,6 +29,7 @@ class Scrapper:
         self.is_dead = False  # Flag to mark the enemy as dead
         self.attack_distance = 50  # Distance within which it attacks the player
         self.attack_damage = 10  # Damage dealt to the player
+        self.bounce_force = 60
 
     def rotate_towards(self, target_rect):
         """Calculate the angle to face the target."""
@@ -85,6 +86,11 @@ class Scrapper:
         
         # Rotate the image to face the player
         self.rotate(angle - math.pi / 2)
+
+        if self.collide(self.player):
+            self.bounce()
+
+            
     
     def rotate(self, angle):
         """ Rotate the enemy image to face the player """
@@ -115,6 +121,28 @@ class Scrapper:
         """Check for collision with the player."""
         # Use rect collision detection
         return self.rect.colliderect(player.rect)
+    
+
+    def bounce(self):
+        """Bounce backward upon collision."""
+        # Calculate the direction to move backward from the player
+        dx = self.player.rect.centerx - self.rect.centerx
+        dy = self.player.rect.centery - self.rect.centery
+        distance = math.hypot(dx, dy)
+        if distance == 0:
+            distance = 1  # Prevent division by zero
+        
+        # Normalize the direction
+        move_x = (dx / distance) * self.bounce_force
+        move_y = (dy / distance) * self.bounce_force
+        
+        # Move the scrapper backward
+        self.rect.x -= move_x
+        self.rect.y -= move_y
+        
+        # Optionally: Reduce health or mark scrapper as dead if necessary
+        
+
 
     def attack(self, player):
         """Handle the attack on the player."""
