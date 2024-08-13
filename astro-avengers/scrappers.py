@@ -3,7 +3,6 @@ import random
 import math
 from const import *
 
-
 class Scrapper:
     def __init__(self):
         self.image = SCRAPPER_IMAGE
@@ -17,6 +16,8 @@ class Scrapper:
         self.rotation_vel = 5  # Rotation velocity
         self.acceleration = 0.1  # Acceleration rate
         self.max_vel = 5  # Maximum velocity
+        self.attack_distance = 50  # Distance within which it attacks the player
+        self.attack_damage = 10  # Damage dealt to the player
 
     def rotate_towards(self, target_rect):
         """Calculate the angle to face the target."""
@@ -54,9 +55,9 @@ class Scrapper:
             self.vel += self.acceleration
         self.move()
 
-        # Check for collision with player
+        # Check for collision with player and attack if within range
         if self.collide(player):
-            self.bounce()  # Bounce backward upon collision
+            self.attack(player)  # Handle attack logic
 
     def draw(self, screen):
         """Draw the scrapper on the screen with rotation."""
@@ -65,16 +66,15 @@ class Scrapper:
         screen.blit(rotated_image, new_rect.topleft)
 
     def collide(self, player):
-        """Check for collision with the player and handle damage."""
-        if self.rect.colliderect(player.rect):
-            player.health -= 10  # Reduce player's health
-            return True
-        return False
+        """Check for collision with the player."""
+        return self.rect.colliderect(player.rect)
 
-    def bounce(self):
-        """Bounce backward upon collision."""
-        self.vel = -self.vel
-        self.move()
+    def attack(self, player):
+        """Handle the attack on the player."""
+        if self.collide(player):
+            player.health -= self.attack_damage  # Reduce player's health
+            # Optionally, remove the scrapper or take other actions
+            self.rect.y = SCREEN_HEIGHT + self.rect.height  # Move off-screen or handle removal
 
 class ScrapperGroup:
     def __init__(self):
