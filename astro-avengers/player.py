@@ -16,6 +16,18 @@ class Player:
         self.shield = False
         self.missile_count = 10
         self.health = 100
+        self.max_vel = 5
+        self.acceration = 0.1
+        self.angle = 0
+        self.vel = 0
+
+    def rotate(self, left=False, right=False):
+        if left:
+            self.angle += self.rotation_vel
+        elif right:
+            self.angle -= self.rotation_vel
+
+            
 
     
     def move(self, dx, dy):
