@@ -17,32 +17,23 @@ class Scrapper:
         self.rotation_vel = 5  # Rotation velocity
         self.acceleration = 0.1  # Acceleration rate
         self.max_vel = 5  # Maximum velocity
-    
-    def rotate(self, left=False, right=False):
-        if left:
-            self.angle += self.rotation_vel
-        elif right:
-            self.angle -= self.rotation_vel
-        
-        # Ensure angle stays within 0-360 degrees
-        self.angle %= 360
 
-    def move_forward(self):
-        self.vel = min(self.vel + self.acceleration, self.max_vel)
-        self.move()
-
-    def move_backward(self):
-        self.vel = max(self.vel - self.acceleration, -self.max_vel / 2)
-        self.move()
+    def rotate_towards(self, target_rect):
+        """Calculate the angle to face the target."""
+        dx = target_rect.centerx - self.rect.centerx
+        dy = target_rect.centery - self.rect.centery
+        angle_to_target = math.degrees(math.atan2(dy, dx)) - 90  # Adjust for image orientation
+        self.angle = angle_to_target % 360
 
     def move(self):
+        """Move the scrapper according to its velocity and angle."""
         radians = math.radians(self.angle)
         vertical = math.cos(radians) * self.vel
         horizontal = math.sin(radians) * self.vel
 
         self.rect.y -= vertical
-        self.rect.x -= horizontal
-        
+        self.rect.x += horizontal
+
         # Ensure the scrapper stays within the screen bounds
         if self.rect.left < 0:
             self.rect.left = 0
@@ -53,36 +44,37 @@ class Scrapper:
         if self.rect.bottom > SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
 
-    def bounce(self):
-        self.vel = -self.vel
-        self.move()
-
     def update(self, player):
-        # Calculate the direction to the player
-        dx = player.rect.centerx - self.rect.centerx
-        dy = player.rect.centery - self.rect.centery
-        angle_to_player = math.atan2(dy, dx)
-
+        """Update the scrapper's movement and rotation."""
         # Rotate to face the player
-        self.angle = math.degrees(angle_to_player+150) % 360
+        self.rotate_towards(player.rect)
 
         # Move towards the player
-        self.move_forward()
+        if self.vel < self.max_vel:
+            self.vel += self.acceleration
+        self.move()
 
         # Check for collision with player
         if self.collide(player):
             self.bounce()  # Bounce backward upon collision
 
     def draw(self, screen):
+        """Draw the scrapper on the screen with rotation."""
         rotated_image = pygame.transform.rotate(self.original_image, -self.angle)
         new_rect = rotated_image.get_rect(center=self.rect.center)
         screen.blit(rotated_image, new_rect.topleft)
-        
+
     def collide(self, player):
+        """Check for collision with the player and handle damage."""
         if self.rect.colliderect(player.rect):
             player.health -= 10  # Reduce player's health
             return True
         return False
+
+    def bounce(self):
+        """Bounce backward upon collision."""
+        self.vel = -self.vel
+        self.move()
 
 class ScrapperGroup:
     def __init__(self):

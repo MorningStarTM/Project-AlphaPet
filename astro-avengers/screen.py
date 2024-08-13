@@ -19,7 +19,7 @@ BACKGROUND_IMAGE = pygame.image.load("assets\\screen\\bg.png")
 
 class Screen:
     def __init__(self):
-        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.screen = pygame.display.set_mode((TOTAL_SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption("Astro Avenger")
         
         # Load the background image and create a flipped version
@@ -55,29 +55,28 @@ class Screen:
         self.move_background()
         self.draw_background()
 
-
-
 def draw_hud(screen, player):
-    hud_rect = pygame.Rect(SCREEN_WIDTH - HUD_WIDTH, 0, HUD_WIDTH, SCREEN_HEIGHT)
+    hud_rect = pygame.Rect(GAME_SCREEN_WIDTH, 0, HUD_WIDTH, SCREEN_HEIGHT)
     pygame.draw.rect(screen, LIGHT_GRAY, hud_rect)
 
     # Draw health bar
-    health_bar_rect = pygame.Rect(SCREEN_WIDTH - HUD_WIDTH + 10, 10, 180, 20)
+    health_bar_rect = pygame.Rect(GAME_SCREEN_WIDTH + 10, 10, 180, 20)
     pygame.draw.rect(screen, (255, 0, 0), health_bar_rect)
-    pygame.draw.rect(screen, (0, 255, 0), (SCREEN_WIDTH - HUD_WIDTH + 10, 10, player.life * 60, 20))
+    pygame.draw.rect(screen, (0, 255, 0), (GAME_SCREEN_WIDTH + 10, 10, player.life * 60, 20))
 
     # Draw shield bar
-    shield_bar_rect = pygame.Rect(SCREEN_WIDTH - HUD_WIDTH + 10, 40, 180, 20)
+    shield_bar_rect = pygame.Rect(GAME_SCREEN_WIDTH + 10, 40, 180, 20)
     pygame.draw.rect(screen, (0, 0, 255), shield_bar_rect)
-    pygame.draw.rect(screen, (0, 255, 255), (SCREEN_WIDTH - HUD_WIDTH + 10, 40, player.shield * 60, 20))
+    pygame.draw.rect(screen, (0, 255, 255), (GAME_SCREEN_WIDTH + 10, 40, player.shield * 60, 20))
 
     # Draw missile count
     missile_text = pygame.font.SysFont(None, 24).render(f"Missiles: {player.missile_count}", True, BLACK)
-    screen.blit(missile_text, (SCREEN_WIDTH - HUD_WIDTH + 10, 70))
+    screen.blit(missile_text, (GAME_SCREEN_WIDTH + 10, 70))
 
     # Draw special bullet count (Placeholder for implementation)
     special_bullet_text = pygame.font.SysFont(None, 24).render("Special Bullets: 0", True, BLACK)
-    screen.blit(special_bullet_text, (SCREEN_WIDTH - HUD_WIDTH + 10, 100))
+    screen.blit(special_bullet_text, (GAME_SCREEN_WIDTH + 10, 100))
+
 
 
 def main():
