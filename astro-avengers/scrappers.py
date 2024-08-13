@@ -188,7 +188,20 @@ class ScrapperGroup:
             self.enemies.append(scrapper)
 
     
-    
+    def maintain_distance(self):
+        """Ensure scrappers maintain a minimum distance from each other."""
+        for i, scrapper1 in enumerate(self.enemies):
+            for scrapper2 in self.enemies[i + 1:]:
+                distance = math.hypot(scrapper1.rect.centerx - scrapper2.rect.centerx,
+                                      scrapper1.rect.centery - scrapper2.rect.centery)
+                if distance < self.min_distance:
+                    # Move scrapper2 away from scrapper1
+                    angle = math.atan2(scrapper2.rect.centery - scrapper1.rect.centery,
+                                       scrapper2.rect.centerx - scrapper1.rect.centerx)
+                    move_x = (self.min_distance - distance) * math.cos(angle)
+                    move_y = (self.min_distance - distance) * math.sin(angle)
+                    scrapper2.rect.x += move_x
+                    scrapper2.rect.y += move_y
 
 
     def manage_spawn(self):
