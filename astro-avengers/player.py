@@ -16,49 +16,9 @@ class Player:
         self.shield = False
         self.missile_count = 10
         self.health = 100
-        self.max_vel = 5
-        self.acceration = 0.1
-        self.angle = 0
-        self.vel = 0
-
-    def rotate(self, left=False, right=False):
-        if left:
-            self.angle += self.rotation_vel
-        elif right:
-            self.angle -= self.rotation_vel
 
     
-    def draw(self, win):
-        blit_rotate_center(win, self.img, (self.x, self.y), self.angle)
-
-    
-    def move_forward(self):
-        self.vel = min(self.vel + self.acceration, self.max_vel)
-        self.move()
-
-    def move_backward(self):
-        self.vel = max(self.vel - self.acceration, -self.max_vel/2)
-        self.move()
-    
-
-    def move(self):
-        radians = math.radians(self.angle)
-        vertical = math.cos(radians) * self.vel
-        horizontal = math.sin(radians) * self.vel
-
-        self.y -= vertical
-        self.x -= horizontal
-
-        if self.rect.left < 0:
-            self.rect.left = 0
-        if self.rect.right > SCREEN_WIDTH:
-            self.rect.right = SCREEN_WIDTH
-        if self.rect.top < 0:
-            self.rect.top = 0
-        if self.rect.bottom > SCREEN_HEIGHT:
-            self.rect.bottom = SCREEN_HEIGHT
-    
-    """def move(self, dx, dy):
+    def move(self, dx, dy):
         self.rect.x += dx
         self.rect.y += dy
 
@@ -70,7 +30,7 @@ class Player:
         if self.rect.top < 0:
             self.rect.top = 0
         if self.rect.bottom > SCREEN_HEIGHT:
-            self.rect.bottom = SCREEN_HEIGHT"""
+            self.rect.bottom = SCREEN_HEIGHT
 
 
     def fire_bullet(self):
@@ -105,6 +65,7 @@ class Player:
             bullet.draw(screen)
         for missile in self.missiles:
             missile.draw(screen)
+
 
 
 def check_collisions(player, enemies, enemy_bullets):
