@@ -2,6 +2,8 @@ import pygame
 import random
 import math
 from const import *
+from explosion import Explosion
+from bullet import Bullet
 
 
 class Doubler:
@@ -48,3 +50,28 @@ class Doubler:
             self.rect.top = self.segment.top
         if self.rect.bottom > self.segment.bottom:
             self.rect.bottom = self.segment.bottom
+
+        self.rotate(angle - math.pi / 2)
+        
+        # Update bullets
+        for bullet in self.bullets:
+            bullet.update()
+            if bullet.rect.bottom < 0:
+                self.bullets.remove(bullet)
+
+        # Handle shooting
+        self.shoot_timer += 1
+        if self.shoot_timer >= self.shoot_interval:
+            self.shoot()
+            self.shoot_timer = 0
+
+        # Check if health is depleted
+        if self.health <= 0:
+            self.trigger_explosion()
+
+
+    def trigger_explosion(self):
+        """Trigger the explosion immediately and mark the enemy as dead"""
+        if not self.explosion:
+            self.explosion = Explosion(self.rect.centerx, self.rect.centery)
+            self.is_dead = True  # Set the flag to indicate the enemy is dead
