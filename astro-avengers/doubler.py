@@ -113,3 +113,44 @@ class Doubler:
             self.health -= 10  # Reduce health for each collision
             return True
         return False
+    
+
+
+
+class DoublerGroup:
+    def __init__(self, player):
+        self.player = player
+        self.segments = SEGMENTS  # Segments to allocate enemies
+        self.enemies = self.create_group()
+        self.spawn_timer = 0
+        self.spawn_interval = 300  # Frames between each spawn
+
+    def create_group(self):
+        # Shuffle segments and create enemies in segments
+        random.shuffle(self.segments)
+        return [Doubler(self.player, self.segments[i % len(self.segments)]) for i in range(2)]
+
+    def manage_spawn(self):
+        self.spawn_timer += 1
+        if self.spawn_timer >= self.spawn_interval:
+            self.spawn_timer = 0
+            # Remove off-screen and dead enemies, and add new enemies
+            self.enemies = [enemy for enemy in self.enemies if not enemy.is_dead]
+            while len(self.enemies) < 5:
+                segment = random.choice(self.segments)
+                self.enemies.append(Doubler(self.player, segment))
+
+    def update(self):
+        self.manage_spawn()  # Manage enemy spawning
+        for enemy in self.enemies:
+            enemy.update()
+            # Check if enemy is off-screen
+            if enemy.rect.top > SCREEN_HEIGHT and not enemy.is_dead:
+                self.enemies.remove(enemy)
+                # Optionally: Add new enemies to keep the group size constant
+                segment = random.choice(self.segments)
+                self.enemies.append(Doubler(self.player, segment))
+
+    def draw(self, screen):
+        for enemy in self.enemies:
+            enemy.draw(screen)
