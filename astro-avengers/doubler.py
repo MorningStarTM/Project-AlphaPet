@@ -3,7 +3,7 @@ import random
 import math
 from const import *
 from explosion import Explosion
-from bullet import Bullet
+from bullet import EnemyBullet
 
 
 class Doubler:
@@ -75,3 +75,34 @@ class Doubler:
         if not self.explosion:
             self.explosion = Explosion(self.rect.centerx, self.rect.centery)
             self.is_dead = True  # Set the flag to indicate the enemy is dead
+
+    
+    def rotate(self, angle):
+        """ Rotate the enemy image to face the player """
+        rotated_image = pygame.transform.rotate(self.original_image, -math.degrees(angle))
+        self.rect = rotated_image.get_rect(center=self.rect.center)  # Adjust rect position
+        self.image = rotated_image
+
+    def shoot(self):
+        # Create an enemy bullet aimed at the player's position
+        bullet = EnemyBullet(self.rect.centerx, self.rect.bottom)
+        self.bullets.append(bullet)
+
+    def draw(self, screen):
+        if self.explosion:
+            self.explosion.draw(screen)
+            if self.explosion.done:
+                return  # Stop drawing if explosion is done
+
+        screen.blit(self.image, self.rect)
+        # Draw health bar
+        if self.health > 0:
+            health_bar_width = 40
+            health_bar_height = 5
+            health_bar_x = self.rect.centerx - health_bar_width // 2
+            health_bar_y = self.rect.top - 10
+
+            # Draw the background of the health bar
+            pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
+            # Draw the current health of the enemy
+            pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 100) * health_bar_width, health_bar_height))
