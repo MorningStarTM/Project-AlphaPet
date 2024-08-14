@@ -106,3 +106,10 @@ class Doubler:
             pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
             # Draw the current health of the enemy
             pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 100) * health_bar_width, health_bar_height))
+
+    
+    def collide(self, bullet):
+        if self.rect.colliderect(bullet.rect):
+            self.health -= 10  # Reduce health for each collision
+            return True
+        return False
