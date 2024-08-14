@@ -19,7 +19,7 @@ class Scrapper:
         self.segment = segment  # Segment that the enemy is restricted to
         self.player = player  # Store reference to the player
         self.rect.x = random.randint(segment.left, segment.right - self.rect.width)
-        self.rect.y = 0  # Start at the top of the segment
+        self.rect.y = SCREEN_HEIGHT  # Start at the top of the segment
         self.speed = 10  # Speed of the enemy
         self.health = 50  # Set initial health
         self.shoot_timer = 0
