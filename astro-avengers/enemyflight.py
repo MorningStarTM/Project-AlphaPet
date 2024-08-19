@@ -83,6 +83,7 @@ class DummyEnemyFlight:
         self.explosion = None  # Explosion attribute
         self.is_dead = False  # Flag to mark the enemy as dead
         self.bounce_distance = 4  
+        self.angle = 0
 
     def update(self):
         if self.is_dead:
@@ -96,6 +97,7 @@ class DummyEnemyFlight:
         dx = self.player.rect.centerx - self.rect.centerx
         dy = self.player.rect.centery - self.rect.centery
         angle = math.atan2(dy, dx)
+        self.angle = angle
         
         # Update the position based on the angle
         self.rect.x += math.cos(angle) * self.speed
@@ -144,16 +146,20 @@ class DummyEnemyFlight:
 
     def shoot(self):
         # Create an enemy bullet aimed at the player's position
-        bullet = EnemyBullet(self.rect.centerx, self.rect.bottom)
+        bullet = EnemyBullet(self.rect.centerx, self.rect.bottom, angle=self.angle)
         self.bullets.append(bullet)
 
     def draw(self, screen):
+        screen.blit(self.image, self.rect)
+
         if self.explosion:
             self.explosion.draw(screen)
             if self.explosion.done:
                 return  # Stop drawing if explosion is done
 
-        screen.blit(self.image, self.rect)
+        for bullet in self.bullets:
+            bullet.draw(screen)
+
         # Draw health bar
         if self.health > 0:
             health_bar_width = 40
