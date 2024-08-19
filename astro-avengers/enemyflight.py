@@ -82,6 +82,7 @@ class DummyEnemyFlight:
         self.bullets = []
         self.explosion = None  # Explosion attribute
         self.is_dead = False  # Flag to mark the enemy as dead
+        self.bounce_distance = 4  
 
     def update(self):
         if self.is_dead:
@@ -165,11 +166,29 @@ class DummyEnemyFlight:
             # Draw the current health of the enemy
             pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 100) * health_bar_width, health_bar_height))
 
+    
+    def bounce(self, player):
+        """Bounce the enemy back upon collision with the player."""
+        # Calculate the direction to move away from the player
+        dx = self.rect.centerx - player.rect.centerx
+        dy = self.rect.centery - player.rect.centery
+        angle = math.atan2(dy, dx)
+        
+        # Move the enemy in the opposite direction
+        self.rect.x += math.cos(angle) * self.bounce_distance
+        self.rect.y += math.sin(angle) * self.bounce_distance
+
+
     def collide(self, bullet):
         if self.rect.colliderect(bullet.rect):
             self.health -= 10  # Reduce health for each collision
             return True
         return False
+    
+    def collide_player(self, player):
+        if self.rect.colliderect(player.rect):
+            self.bounce(player)
+    
 
 LEFT_SEGMENT = pygame.Rect(0, 0, SCREEN_WIDTH // 3, SCREEN_HEIGHT)
 CENTER_SEGMENT = pygame.Rect(SCREEN_WIDTH // 3, 0, SCREEN_WIDTH // 3, SCREEN_HEIGHT)
