@@ -16,6 +16,7 @@ class Player:
         self.shield = False
         self.missile_count = 10
         self.health = 100
+        
 
     
     def move(self, dx, dy):
@@ -67,14 +68,88 @@ class Player:
             missile.draw(screen)
 
 
+class AdvancedPlayer:
+    def __init__(self):
+        self.image = PLAYER_IMAGE
+        self.rect = self.image.get_rect()
+        self.rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT - 50)
+        self.speed = 5
+        self.bullets = []
+        self.missiles = []
+        self.life = 3
+        self.ammunition = 500
+        self.shield = False
+        self.missile_count = 10
+        self.health = 100
+        
+        self.max_vel = 4
+        self.vel = 0
+        self.rotation_vel = 4
+        self.angle = 0
+        self.x, self.y = self.rect.center
+        self.acceration = 0.1
 
-def check_collisions(player, enemies, enemy_bullets):
+
+    def rotate(self, left=False, right=False):
+        if left:
+            self.angle += self.rotation_vel
+        elif right:
+            self.angle -= self.rotation_vel
+
+
+    def move_forward(self):
+        self.vel = min(self.vel + self.acceration, self.max_vel)
+        self.move()
+
+    def move_backward(self):
+        self.vel = max(self.vel - self.acceration, -self.max_vel)
+        self.move()
+
+    def move(self):
+        radians = math.radians(self.angle)
+        vertical = math.cos(radians) * self.vel
+        horizontal = math.sin(radians) * self.vel
+
+        self.y -= vertical
+        self.x -= horizontal
+
+    def reduce_speed(self):
+        self.vel = max(self.vel - self.acceration / 2, 0)
+        self.move()
+
+    def get_rect(self):
+        car_rect = self.img.get_rect(topleft=(self.x, self.y))
+        rotated_rect = pygame.Rect(car_rect)
+        rotated_rect.center = car_rect.center
+        return rotated_rect
+    
+    def bounce(self):
+        self.vel = -self.vel
+        self.move()
+
+    def car_collide(self, other_car):
+        # Check for pixel-level collision with another car
+        offset = (int(other_car.x - self.x), int(other_car.y - self.y))
+        overlap = self.get_mask().overlap(other_car.get_mask(), offset)
+        return overlap is not None
+    
+    def draw(self, win):
+        blit_rotate_center(win, self.image, (self.x, self.y), self.angle)
+
+
+
+
+def blit_rotate_center(win, image, top_left, angle):
+    rotated_image = pygame.transform.rotate(image, angle)
+    new_rect = rotated_image.get_rect(
+        center=image.get_rect(topleft=top_left).center
+    )
+    win.blit(rotated_image, new_rect.topleft)
+
+
+def check_collisions(player, enemies):
     for enemy in enemies:
         if player.rect.colliderect(enemy.rect):
             player.life -= 1
-            enemies.remove(enemy)
+            
     
-    for bullet in enemy_bullets:
-        if player.rect.colliderect(bullet.rect):
-            player.life -= 1
-            enemy_bullets.remove(bullet)
