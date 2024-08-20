@@ -22,7 +22,7 @@ class Decepticon:
         self.bullets = []
         self.explosion = None  # Explosion attribute
         self.is_dead = False  # Flag to mark the enemy as dead
-
+        self.angle = 0
 
     def update(self):
         if self.is_dead:
@@ -35,11 +35,11 @@ class Decepticon:
         # Calculate the angle to the player
         dx = self.player.rect.centerx - self.rect.centerx
         dy = self.player.rect.centery - self.rect.centery
-        angle = math.atan2(dy, dx)
+        self.angle = math.atan2(dy, dx)
         
         # Update the position based on the angle
-        self.rect.x += math.cos(angle) * self.speed
-        self.rect.y += math.sin(angle) * self.speed
+        self.rect.x += math.cos(self.angle) * self.speed
+        self.rect.y += math.sin(self.angle) * self.speed
         
         # Ensure the enemy stays within its segment
         if self.rect.left < self.segment.left:
@@ -52,7 +52,7 @@ class Decepticon:
             self.rect.bottom = self.segment.bottom
         
         # Rotate the image to face the player
-        self.rotate(angle - math.pi / 2)
+        self.rotate(self.angle - math.pi / 2)
         
         # Update bullets
         for bullet in self.bullets:
@@ -85,7 +85,7 @@ class Decepticon:
 
     def shoot(self):
         # Create an enemy bullet aimed at the player's position
-        bullet = EnemyBullet(self.rect.centerx, self.rect.bottom)
+        bullet = EnemyBullet(self.rect.centerx, self.rect.bottom, self.angle)
         self.bullets.append(bullet)
 
     def draw(self, screen):
