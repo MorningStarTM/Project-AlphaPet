@@ -206,11 +206,12 @@ class EnemyGroup:
     def __init__(self, player):
         self.player = player
         self.segments = SEGMENTS  # Segments to allocate enemies
-        self.enemies = self.create_group()
+        self.enemies = [] #self.create_group()
         self.spawn_timer = 0
         self.spawn_interval = 300  # Frames between each spawn
         self.arc_radius = 150  # Radius of the arc shape
         self.arc_center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+        self.min_distance = 3
         self.initialize_enemies()
 
     def create_group(self):
@@ -220,7 +221,7 @@ class EnemyGroup:
     
     def initialize_enemies(self):
         """Initialize scrappers in an arc shape."""
-        num_scrappers = 10  # Number of scrappers in the group
+        num_scrappers = 5  # Number of scrappers in the group
         angle_step = 360 / num_scrappers
         
         for i in range(num_scrappers):
