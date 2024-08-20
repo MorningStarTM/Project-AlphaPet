@@ -209,11 +209,47 @@ class EnemyGroup:
         self.enemies = self.create_group()
         self.spawn_timer = 0
         self.spawn_interval = 300  # Frames between each spawn
+        self.arc_radius = 150  # Radius of the arc shape
+        self.arc_center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+        self.initialize_enemies()
 
     def create_group(self):
         # Shuffle segments and create enemies in segments
         random.shuffle(self.segments)
         return [DummyEnemyFlight(self.player, self.segments[i % len(self.segments)]) for i in range(5)]
+    
+    def initialize_enemies(self):
+        """Initialize scrappers in an arc shape."""
+        num_scrappers = 10  # Number of scrappers in the group
+        angle_step = 360 / num_scrappers
+        
+        for i in range(num_scrappers):
+            angle = math.radians(i * angle_step)
+            x = self.arc_center[0] + self.arc_radius * math.cos(angle)
+            y = self.arc_center[1] + self.arc_radius * math.sin(angle)
+            
+            # Choose a segment for each scrapper
+            segment = random.choice(self.segments)
+            scrapper = DummyEnemyFlight(self.player, segment)
+            scrapper.rect.center = (x, y)
+            self.enemies.append(scrapper)
+
+    
+    def maintain_distance(self):
+        """Ensure scrappers maintain a minimum distance from each other."""
+        for i, enemy1 in enumerate(self.enemies):
+            for enemy2 in self.enemies[i + 1:]:
+                distance = math.hypot(enemy1.rect.centerx - enemy1.rect.centerx,
+                                      enemy1.rect.centery - enemy1.rect.centery)
+                if distance < self.min_distance:
+                    # Move scrapper2 away from scrapper1
+                    angle = math.atan2(enemy2.rect.centery - enemy1.rect.centery,
+                                       enemy2.rect.centerx - enemy1.rect.centerx)
+                    move_x = (self.min_distance - distance) * math.cos(angle)
+                    move_y = (self.min_distance - distance) * math.sin(angle)
+                    enemy2.rect.x += move_x
+                    enemy2.rect.y += move_y
+
 
     def manage_spawn(self):
         self.spawn_timer += 1
@@ -235,6 +271,8 @@ class EnemyGroup:
                 # Optionally: Add new enemies to keep the group size constant
                 segment = random.choice(self.segments)
                 self.enemies.append(DummyEnemyFlight(self.player, segment))
+        
+        self.maintain_distance()
 
     def draw(self, screen):
         for enemy in self.enemies:
