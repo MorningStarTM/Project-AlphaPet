@@ -3,28 +3,33 @@ import os
 from glob import glob
 
 
-SCREEN_WIDTH = 1100
+SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 1000
+TOTAL_SCREEN_WIDTH = 1200
+GAME_SCREEN_WIDTH = 1000
+HUD_WIDTH = 200
 
 
-def scale_image(path, factor):
+def scale_image(path, factor=0.3):
     image = pygame.image.load(path)
-    new_width = int(image.get_width() * 0.35)  # Scale to 50% of original width
-    new_height = int(image.get_height() * 0.35)  # Scale to 50% of original height
+    new_width = int(image.get_width() * factor)  # Scale to 50% of original width
+    new_height = int(image.get_height() * factor)  # Scale to 50% of original height
     return pygame.transform.scale(image, (new_width, new_height))
 
 
-PLAYER_IMAGE = scale_image("assets\\Player_1\\ship_2.png", 0.3)
+PLAYER_IMAGE = scale_image("assets\\Player_1\\ship_2.png", 0.25)
 
 ENEMY_FLIGHT_IMAGE = pygame.image.load("assets\\enemy_1\\Turret09.png")
 
 DECEPTICON_IMAGE = scale_image("assets\\enemy_1\\eship1.png", 0.3)
+DOUBLER_IMAGE = scale_image("assets\\enemy_1\\Turret07.png", 0.9)
 
 
 
 SCRAPPER_IMAGE = scale_image("assets\\colony\\B13.png", 0.3)
 
 BULLET_IMAGE = pygame.image.load("assets\\bullet\\basicBullet.png")
+DOUBLE_BULLET_IMAGE = pygame.image.load("assets\\bullet\\bullets_golden.png")
 MISSILE_IMAGE = pygame.image.load("assets\\bullet\\P05.png")
 BLUE_BULLET_IMAGE = pygame.image.load("assets\\bullet\\bule_bullet.png")
 GOLDEN_BULLET_IMAGE = pygame.image.load("assets\\bullet\\bullets_golden.png")
