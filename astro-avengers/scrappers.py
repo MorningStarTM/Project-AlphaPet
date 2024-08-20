@@ -173,7 +173,7 @@ class ScrapperGroup:
     
     def initialize_scrappers(self):
         """Initialize scrappers in an arc shape."""
-        num_scrappers = 5  # Number of scrappers in the group
+        num_scrappers = 10  # Number of scrappers in the group
         angle_step = 360 / num_scrappers
         
         for i in range(num_scrappers):
