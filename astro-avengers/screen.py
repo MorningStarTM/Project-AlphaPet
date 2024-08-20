@@ -346,7 +346,7 @@ def main6():
     # Initialize the screen and game elements
     screen = Screen()
     player = Player()
-    scrapper_group = ScrapperGroup()  # Initialize Scrapper group
+    scrapper_group = ScrapperGroup(player)  # Initialize Scrapper group
     
     running = True
 
@@ -375,13 +375,13 @@ def main6():
         
         # Update game elements
         player.update()
-        scrapper_group.update(player)  # Update Scrapper group
+        scrapper_group.update()  # Update Scrapper group
         
         # Check for collisions
         
         
         # Check collisions with scrappers
-        for scrapper in scrapper_group.scrappers:
+        for scrapper in scrapper_group.enemies:
             if scrapper.collide(player):
                 # Player health already reduced in Scrapper's collide method
                 pass
@@ -394,7 +394,7 @@ def main6():
         
         # Draw game elements
         
-        for scrapper in scrapper_group.scrappers:
+        for scrapper in scrapper_group.enemies:
             scrapper.draw(screen.screen)
         
         player.draw(screen.screen)
