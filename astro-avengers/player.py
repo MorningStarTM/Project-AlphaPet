@@ -1,5 +1,5 @@
 from const import *
-from bullet import Bullet
+from bullet import Bullet, ImageEnemyBullet
 from missile import Missile
 import math
 
@@ -82,9 +82,9 @@ class AdvancedPlayer:
         self.missile_count = 10
         self.health = 100
         
-        self.max_vel = 4
+        self.max_vel = 6
         self.vel = 0
-        self.rotation_vel = 4
+        self.rotation_vel = 5
         self.angle = 0
         self.x, self.y = self.rect.center
         self.acceration = 0.1
@@ -98,11 +98,11 @@ class AdvancedPlayer:
 
 
     def move_forward(self):
-        self.vel = min(self.vel + self.acceration, self.max_vel)
+        self.vel = self.max_vel
         self.move()
 
     def move_backward(self):
-        self.vel = max(self.vel - self.acceration, -self.max_vel)
+        self.vel = -self.max_vel
         self.move()
 
     def move(self):
@@ -118,7 +118,7 @@ class AdvancedPlayer:
         self.move()
 
     def get_rect(self):
-        car_rect = self.img.get_rect(topleft=(self.x, self.y))
+        car_rect = self.image.get_rect(topleft=(self.x, self.y))
         rotated_rect = pygame.Rect(car_rect)
         rotated_rect.center = car_rect.center
         return rotated_rect
@@ -132,9 +132,31 @@ class AdvancedPlayer:
         offset = (int(other_car.x - self.x), int(other_car.y - self.y))
         overlap = self.get_mask().overlap(other_car.get_mask(), offset)
         return overlap is not None
-    
+
+
+    def shoot(self):
+        """Create a bullet and add it to the list of bullets."""
+        if self.ammunition > 0:
+            bullet = ImageEnemyBullet(self.x, self.y, math.radians(self.angle))
+            self.bullets.append(bullet)
+            self.ammunition -= 1  # Decrease ammunition count
+
+    def update(self):
+        #self.move()  # Update player position
+
+        # Update bullets
+        for bullet in self.bullets:
+            bullet.update()
+            # Remove bullet if it goes off-screen
+            if bullet.rect.bottom < 0 or bullet.rect.top > SCREEN_HEIGHT or bullet.rect.right < 0 or bullet.rect.left > SCREEN_WIDTH:
+                self.bullets.remove(bullet)
+
+
     def draw(self, win):
         blit_rotate_center(win, self.image, (self.x, self.y), self.angle)
+        for bullet in self.bullets:
+            bullet.draw(win)
+        
 
 
 
