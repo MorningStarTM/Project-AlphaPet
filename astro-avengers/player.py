@@ -137,9 +137,15 @@ class AdvancedPlayer:
     def shoot(self):
         """Create a bullet and add it to the list of bullets."""
         if self.ammunition > 0:
-            bullet = ImageEnemyBullet(self.x, self.y, math.radians(self.angle))
+            bullet = ImageEnemyBullet(self.x+50, self.y, math.radians(self.angle))
             self.bullets.append(bullet)
             self.ammunition -= 1  # Decrease ammunition count
+
+    def launch(self):
+        if self.missile_count > 0:
+            missile = Missile(self.x+50, self.y, math.radians(self.angle))
+            self.missiles.append(missile)
+            self.missile_count -= 1
 
     def update(self):
         #self.move()  # Update player position
@@ -151,11 +157,19 @@ class AdvancedPlayer:
             if bullet.rect.bottom < 0 or bullet.rect.top > SCREEN_HEIGHT or bullet.rect.right < 0 or bullet.rect.left > SCREEN_WIDTH:
                 self.bullets.remove(bullet)
 
+        for missile in self.missiles:
+            missile.update()
+            # Remove bullet if it goes off-screen
+            if missile.rect.bottom < 0 or missile.rect.top > SCREEN_HEIGHT or missile.rect.right < 0 or missile.rect.left > SCREEN_WIDTH:
+                self.missiles.remove(missile)
 
     def draw(self, win):
         blit_rotate_center(win, self.image, (self.x, self.y), self.angle)
         for bullet in self.bullets:
             bullet.draw(win)
+
+        for missile in self.missiles:
+            missile.draw(win)
         
 
 
