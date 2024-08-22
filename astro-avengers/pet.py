@@ -61,3 +61,11 @@ class Pet:
         offset = (int(other_car.x - self.x), int(other_car.y - self.y))
         overlap = self.get_mask().overlap(other_car.get_mask(), offset)
         return overlap is not None
+    
+
+    def shoot(self):
+        """Create a bullet and add it to the list of bullets."""
+        if self.ammunition > 0:
+            bullet = ImageEnemyBullet(self.x, self.y, math.radians(self.angle))
+            self.bullets.append(bullet)
+            self.ammunition -= 1  # Decrease ammunition count
