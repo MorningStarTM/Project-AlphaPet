@@ -69,3 +69,20 @@ class Pet:
             bullet = ImageEnemyBullet(self.x, self.y, math.radians(self.angle))
             self.bullets.append(bullet)
             self.ammunition -= 1  # Decrease ammunition count
+
+    
+    def update(self):
+        #self.move()  # Update player position
+
+        # Update bullets
+        for bullet in self.bullets:
+            bullet.update()
+            # Remove bullet if it goes off-screen
+            if bullet.rect.bottom < 0 or bullet.rect.top > SCREEN_HEIGHT or bullet.rect.right < 0 or bullet.rect.left > SCREEN_WIDTH:
+                self.bullets.remove(bullet)
+
+
+    def draw(self, win):
+        blit_rotate_center(win, self.image, (self.x, self.y), self.angle)
+        for bullet in self.bullets:
+            bullet.draw(win)
