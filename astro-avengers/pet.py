@@ -23,3 +23,31 @@ class Pet:
         self.angle = 0
         self.x, self.y = self.rect.center
         self.acceration = 0.1
+
+
+    def rotate(self, left=False, right=False):
+        if left:
+            self.angle += self.rotation_vel
+        elif right:
+            self.angle -= self.rotation_vel
+
+    
+    def move_forward(self):
+        self.vel = self.max_vel
+        self.move()
+
+    def move_backward(self):
+        self.vel = -self.max_vel
+        self.move()
+
+    def move(self):
+        radians = math.radians(self.angle)
+        vertical = math.cos(radians) * self.vel
+        horizontal = math.sin(radians) * self.vel
+
+        self.y -= vertical
+        self.x -= horizontal
+
+    def reduce_speed(self):
+        self.vel = max(self.vel - self.acceration / 2, 0)
+        self.move()
