@@ -23,7 +23,7 @@ class ImageEnemyBullet:
         self.angle = angle  # Angle at which the bullet is shot
         
         # Rotate the image based on the angle
-        self.image = pygame.transform.rotate(self.original_image, self.angle)
+        self.image = pygame.transform.rotate(self.original_image, math.degrees(self.angle))
         self.rect = self.image.get_rect()
         self.rect.centerx = x 
         self.rect.centery = y  # Adjust to center the image based on the rotated image
