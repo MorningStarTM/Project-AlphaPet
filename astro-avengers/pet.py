@@ -55,3 +55,9 @@ class Pet:
     def bounce(self):
         self.vel = -self.vel
         self.move()
+
+    def car_collide(self, other_car):
+        # Check for pixel-level collision with another car
+        offset = (int(other_car.x - self.x), int(other_car.y - self.y))
+        overlap = self.get_mask().overlap(other_car.get_mask(), offset)
+        return overlap is not None
