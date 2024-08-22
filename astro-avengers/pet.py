@@ -51,3 +51,7 @@ class Pet:
     def reduce_speed(self):
         self.vel = max(self.vel - self.acceration / 2, 0)
         self.move()
+
+    def bounce(self):
+        self.vel = -self.vel
+        self.move()
