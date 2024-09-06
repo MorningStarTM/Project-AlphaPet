@@ -124,6 +124,7 @@ def main():
     # Initialize the screen and game elements
     screen = Screen()
     player = Player()
+    pet = Pet()
     enemy_group = DecepticonGroup(player)  # Initialize with 3 Decepticons
     
     running = True
@@ -137,6 +138,8 @@ def main():
                     player.fire_bullet()
                 elif event.key in (pygame.K_SPACE, pygame.K_RCTRL):
                     player.launch_missile()
+                elif event.key == pygame.K_LCTRL:
+                    pet.fire_bullet()
 
         # Handle player movement
         keys = pygame.key.get_pressed()
@@ -149,10 +152,23 @@ def main():
             dy = -player.speed
         if keys[pygame.K_DOWN]:
             dy = player.speed
+
+        if keys[pygame.K_a]:
+            dx = -pet.speed
+        if keys[pygame.K_d]:
+            dx = pet.speed
+        if keys[pygame.K_w]:
+            dy = -pet.speed
+        if keys[pygame.K_s]:
+            dy = pet.speed
         player.move(dx, dy)
+        pet.move(dx, dy)
+
+
         
         # Update game elements
         player.update()
+        pet.update()
         enemy_group.update()  # Pass player position to enemies
         
         # Check for collisions
@@ -176,8 +192,10 @@ def main():
         screen.update_screen()
         
         # Draw game elements
+        #pet.draw(screen.screen)
         enemy_group.draw(screen.screen)
-        player.draw(screen.screen)
+        #player.draw(screen.screen)
+        
         
         # Draw HUD
         draw_hud(screen.screen, player)
