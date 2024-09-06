@@ -1,12 +1,13 @@
 import pygame
 import os
-from player import Player
+from player import Player, check_collisions, AdvancedPlayer
 from enemyflight import EnemyFlight, DummyEnemyFlight, EnemyGroup
 from decepticons import Decepticon, DecepticonGroup
 from gla import Ammunition, Life, Shield, check_gla_collisions
 from const import *
 from scrappers import ScrapperGroup, Scrapper
 from doubler import Doubler, DoublerGroup
+from pet import Pet
 
 # Initialize Pygame
 pygame.init()
@@ -15,7 +16,7 @@ pygame.init()
 
 
 # Load the background image
-BACKGROUND_IMAGE = pygame.image.load("assets\\screen\\bg.png")
+BACKGROUND_IMAGE = pygame.image.load("assets\\screen\\Black_Wallpaper.jpg")
 
 class Screen:
     def __init__(self):
@@ -23,7 +24,7 @@ class Screen:
         pygame.display.set_caption("Astro Avenger")
         
         # Load the background image and create a flipped version
-        self.bg_image = pygame.image.load("assets\\screen\\bg.png")
+        self.bg_image = pygame.image.load("assets\\screen\\Black_Wallpaper.jpg")
         self.bg_flipped = pygame.transform.flip(self.bg_image, False, True)
         
         # Initialize background positions
@@ -76,6 +77,8 @@ class Screen:
     # Draw special bullet count (Placeholder for implementation)
     special_bullet_text = pygame.font.SysFont(None, 24).render("Special Bullets: 0", True, BLACK)
     screen.blit(special_bullet_text, (GAME_SCREEN_WIDTH + 10, 100))"""
+
+
 
 def draw_hud(screen, player):
     # Create a semi-transparent surface for the HUD
@@ -154,13 +157,14 @@ def main():
         
         # Check for collisions
         for bullet in player.bullets[:]:
-            for enemy in enemy_group.decepticons[:]:
+            for enemy in enemy_group.enemies[:]:
                 if enemy.collide(bullet):
                     player.bullets.remove(bullet)
                     break
+
         
         for missile in player.missiles[:]:
-            for enemy in enemy_group.decepticons[:]:
+            for enemy in enemy_group.enemies[:]:
                 if enemy.collide(missile):
                     player.missiles.remove(missile)
                     break
@@ -184,7 +188,76 @@ def main():
     pygame.quit()
 
 
+def main2():
+    pygame.init()
+    clock = pygame.time.Clock()
+    
+    # Initialize the screen and game elements
+    screen = Screen()
+    player = AdvancedPlayer()
+    pet = Pet()
 
+
+    running = True
+
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LCTRL:
+                    player.shoot()
+                elif event.key == pygame.K_SPACE:
+                    player.launch()
+                elif event.key == pygame.K_RCTRL:
+                    pet.shoot()
+
+        keys = pygame.key.get_pressed()
+        moved = False
+        opponent_moved = False
+
+        if keys[pygame.K_a]:
+            player.rotate(left=True)
+        if keys[pygame.K_d]:
+            player.rotate(right=True)
+        if keys[pygame.K_w]:
+            moved = True
+            player.move_forward()
+        if keys[pygame.K_s]:
+            moved = True
+            player.move_backward()
+
+        if keys[pygame.K_LEFT]:
+            pet.rotate(left=True)
+        if keys[pygame.K_RIGHT]:
+            pet.rotate(right=True)
+        if keys[pygame.K_UP]:
+            moved = True
+            pet.move_forward()
+        if keys[pygame.K_DOWN]:
+            moved = True
+            pet.move_backward()
+        
+        player.update()
+        pet.update()
+        
+        # Clear screen
+        screen.screen.fill((0, 0, 0))
+        
+        # Update background and draw it
+        screen.update_screen()
+        
+        # Draw game elements
+        player.draw(screen.screen)
+        pet.draw(screen.screen)
+        
+        # Draw HUD
+        draw_hud(screen.screen, player)
+        
+        pygame.display.flip()
+        clock.tick(60)
+
+    pygame.quit()
 
 
 def main4():
