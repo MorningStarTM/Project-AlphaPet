@@ -4,7 +4,7 @@ import math
 from const import *  # Assuming these are in const.py
 from explosion import Explosion
 from enemyflight import EnemyFlight, EnemyGroup
-from bullet import EnemyBullet
+from bullet import EnemyBullet, PetBullet
 
 class Decepticon:
     def __init__(self, player, segment):
@@ -85,10 +85,13 @@ class Decepticon:
 
     def shoot(self):
         # Create an enemy bullet aimed at the player's position
-        bullet = EnemyBullet(self.rect.centerx, self.rect.bottom, self.angle)
+        bullet = PetBullet(self.rect.centerx, self.rect.bottom, self.angle)
         self.bullets.append(bullet)
 
     def draw(self, screen):
+        for bullet in self.bullets:
+            bullet.draw(screen)
+            
         if self.explosion:
             self.explosion.draw(screen)
             if self.explosion.done:
