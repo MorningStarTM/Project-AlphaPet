@@ -16,6 +16,31 @@ class Bullet:
         screen.blit(self.image, self.rect)
 
 
+class PetBullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, angle):
+        super().__init__()
+        self.image = pygame.Surface((10, 10), pygame.SRCALPHA)  # Increase size
+        pygame.draw.circle(self.image, (221, 245, 66), (5, 5), 3)  # Change color to red
+        self.rect = self.image.get_rect(center=(x, y))
+        self.angle = angle + 90
+        self.speed = 40
+        self.x = x
+        self.y = y
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def update(self):
+        radians = math.radians(self.angle)
+        self.x += self.speed * math.cos(radians)
+        self.y -= self.speed * math.sin(radians)
+        self.rect.center = (self.x, self.y)
+        
+        # Debug print to check bullet position
+        print(f"Bullet position: {self.rect.center}")
+
+        if not (0 <= self.rect.x <= SCREEN_WIDTH and 0 <= self.rect.y <= SCREEN_HEIGHT):
+            self.kill()
+
+
 
 class ImageEnemyBullet:
     def __init__(self, x, y, angle):
