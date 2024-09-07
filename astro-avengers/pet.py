@@ -1,5 +1,5 @@
 from const import *
-from bullet import Bullet, ImageEnemyBullet
+from bullet import Bullet, ImageEnemyBullet, PetBullet
 import math
 
 
@@ -23,6 +23,7 @@ class AdvancedPet:
         self.angle = 0
         self.x, self.y = self.rect.center
         self.acceration = 0.1
+        self.bullets = pygame.sprite.Group()
 
 
     def rotate(self, left=False, right=False):
@@ -66,8 +67,8 @@ class AdvancedPet:
     def shoot(self):
         """Create a bullet and add it to the list of bullets."""
         if self.ammunition > 0:
-            bullet = ImageEnemyBullet(self.x, self.y, math.radians(self.angle))
-            self.bullets.append(bullet)
+            bullet = PetBullet(self.x, self.y, math.radians(self.angle))
+            self.bullets.add(bullet)
             self.ammunition -= 1  # Decrease ammunition count
 
     
@@ -84,8 +85,10 @@ class AdvancedPet:
 
     def draw(self, win):
         blit_rotate_center(win, self.image, (self.x, self.y), self.angle)
-        for bullet in self.bullets:
-            bullet.draw(win)
+        self.bullets.draw(win)
+        
+    def update_bullets(self):
+        self.bullets.update()
 
 
 
@@ -141,6 +144,95 @@ class Pet:
             bullet.draw(screen)
         for missile in self.missiles:
             missile.draw(screen)
+
+
+
+class NewPet(pygame.sprite.Sprite):
+    def __init__(self, scale_factor=0.9):
+        super().__init__()
+        # Load and scale the image
+        original_image = pygame.image.load(PET_IMAGE).convert_alpha()
+        self.original_image = pygame.transform.scale(original_image, (int(original_image.get_width() * scale_factor), int(original_image.get_height() * scale_factor)))
+        self.image = self.original_image
+        self.max_vel = 5
+        self.vel = 0
+        self.rotation_vel = 5
+        self.angle = 0
+        self.START_POS = (SCREEN_WIDTH//2 - 100, SCREEN_HEIGHT)
+        self.x, self.y = self.START_POS
+        self.acceleration = 0.1
+        self.radar_visible = True
+        self.rect = self.image.get_rect(center=self.START_POS)
+        self.mask = pygame.mask.from_surface(self.image)
+        self.health = 100
+
+        self.bullets = pygame.sprite.Group()
+
+    def rotate(self, left=False, right=False):
+        if left:
+            self.angle += self.rotation_vel
+        elif right:
+            self.angle -= self.rotation_vel
+        self.angle %= 360
+        self.image = pygame.transform.rotate(self.original_image, self.angle)
+        self.rect = self.image.get_rect(center=self.rect.center)
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def get_health(self):
+        return self.health
+
+    def draw(self, win):
+        win.blit(self.image, self.rect.topleft)
+        self.bullets.draw(win)  # Ensure bullets are drawn
+
+    def move_forward(self):
+        self.vel = self.max_vel
+        self.move()
+
+    def move_backward(self):
+        self.vel = -self.max_vel
+        self.move()
+
+    def move(self):
+        radians = math.radians(self.angle)
+        vertical = math.cos(radians) * self.vel
+        horizontal = math.sin(radians) * self.vel
+
+        self.y -= vertical
+        self.x -= horizontal
+
+        self.x = max(0 + self.rect.width // 2, min(SCREEN_WIDTH - self.rect.width // 2, self.x))
+        self.y = max(0 + self.rect.height // 2, min(SCREEN_HEIGHT - self.rect.height // 2, self.y))
+
+        self.rect.center = (self.x, self.y)
+        
+        
+
+    def reduce_speed(self):
+        self.vel = max(self.vel - self.acceleration / 2, 0)
+        self.move()
+
+    def bounce(self):
+        self.vel = -self.vel * 0.5
+        self.move()
+   
+
+    def shoot(self):
+        bullet = PetBullet(self.x, self.y, self.angle)
+        self.bullets.add(bullet)
+        print("Bullet shot!")  # Debug print
+
+    def update_bullets(self):
+        self.bullets.update()
+
+    def handle_collision(self, buildings):
+        if pygame.sprite.spritecollide(self, buildings, False, pygame.sprite.collide_mask):
+            #self.vel = 0
+            self.bounce()
+            self.move()
+
+    def update(self):
+        self.update_bullets()
 
 
 def blit_rotate_center(win, image, top_left, angle):
