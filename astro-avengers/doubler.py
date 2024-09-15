@@ -3,7 +3,7 @@ import random
 import math
 from const import *
 from explosion import Explosion
-from bullet import EnemyBullet
+from bullet import EnemyBullet, DecepticonBullet
 
 
 class Doubler:
@@ -19,10 +19,10 @@ class Doubler:
         self.health = 100  # Set initial health
         self.shoot_timer = 0
         self.shoot_interval = 60  # Time between shots in frames
-        self.bullets = []
+        self.bullets = pygame.sprite.Group()
         self.explosion = None  # Explosion attribute
         self.is_dead = False  # Flag to mark the enemy as dead
-
+        self.angle = 0
 
     def update(self):
         if self.is_dead:
@@ -35,11 +35,11 @@ class Doubler:
         # Calculate the angle to the player
         dx = self.player.rect.centerx - self.rect.centerx
         dy = self.player.rect.centery - self.rect.centery
-        angle = math.atan2(dy, dx)
+        self.angle = math.atan2(dy, dx)
         
         # Update the position based on the angle
-        self.rect.x += math.cos(angle) * self.speed
-        self.rect.y += math.sin(angle) * self.speed
+        self.rect.x += math.cos(self.angle) * self.speed
+        self.rect.y += math.sin(self.angle) * self.speed
         
         # Ensure the enemy stays within its segment
         if self.rect.left < self.segment.left:
@@ -51,7 +51,7 @@ class Doubler:
         if self.rect.bottom > self.segment.bottom:
             self.rect.bottom = self.segment.bottom
 
-        self.rotate(angle - math.pi / 2)
+        self.rotate(self.angle - math.pi / 2)
         
         # Update bullets
         for bullet in self.bullets:
@@ -85,10 +85,13 @@ class Doubler:
 
     def shoot(self):
         # Create an enemy bullet aimed at the player's position
-        bullet = EnemyBullet(self.rect.centerx, self.rect.bottom)
-        self.bullets.append(bullet)
+        bullet = DecepticonBullet(self.rect.centerx, self.rect.centery, self.angle, color=YELLOW)
+        self.bullets.add(bullet)
 
     def draw(self, screen):
+        for bullet in self.bullets:
+            bullet.draw(screen)
+
         if self.explosion:
             self.explosion.draw(screen)
             if self.explosion.done:
