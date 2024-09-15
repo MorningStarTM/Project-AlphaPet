@@ -86,7 +86,7 @@ class Decepticon:
 
     def shoot(self):
         # Create an enemy bullet aimed at the player's position
-        bullet = DecepticonBullet(self.rect.centerx, self.rect.centery, self.angle)
+        bullet = DecepticonBullet(self.rect.centerx, self.rect.centery, self.angle, color=YELLOW)
         self.bullets.add(bullet)
 
     def draw(self, screen):
