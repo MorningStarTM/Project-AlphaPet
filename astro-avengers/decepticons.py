@@ -4,7 +4,7 @@ import math
 from const import *  # Assuming these are in const.py
 from explosion import Explosion
 from enemyflight import EnemyFlight, EnemyGroup
-from bullet import EnemyBullet, PetBullet
+from bullet import EnemyBullet, PetBullet, DecepticonBullet
 
 class Decepticon:
     def __init__(self, player, segment):
@@ -19,10 +19,11 @@ class Decepticon:
         self.health = 100  # Set initial health
         self.shoot_timer = 0
         self.shoot_interval = 60  # Time between shots in frames
-        self.bullets = []
+        #self.bullets = []
         self.explosion = None  # Explosion attribute
         self.is_dead = False  # Flag to mark the enemy as dead
         self.angle = 0
+        self.bullets = pygame.sprite.Group()
 
     def update(self):
         if self.is_dead:
@@ -85,8 +86,8 @@ class Decepticon:
 
     def shoot(self):
         # Create an enemy bullet aimed at the player's position
-        bullet = PetBullet(self.rect.centerx, self.rect.bottom, self.angle)
-        self.bullets.append(bullet)
+        bullet = DecepticonBullet(self.rect.centerx, self.rect.centery, self.angle)
+        self.bullets.add(bullet)
 
     def draw(self, screen):
         for bullet in self.bullets:
@@ -98,6 +99,7 @@ class Decepticon:
                 return  # Stop drawing if explosion is done
 
         screen.blit(self.image, self.rect)
+
         # Draw health bar
         if self.health > 0:
             health_bar_width = 70
@@ -117,7 +119,26 @@ class Decepticon:
             return True
         return False
     
+    def bounce(self):
+        """Bounce backward upon collision."""
+        # Calculate the direction to move backward from the player
+        dx = self.player.rect.centerx - self.rect.centerx
+        dy = self.player.rect.centery - self.rect.centery
+        distance = math.hypot(dx, dy)
+        if distance == 0:
+            distance = 1  # Prevent division by zero
+        
+        # Normalize the direction
+        move_x = (dx / distance) * self.bounce_force
+        move_y = (dy / distance) * self.bounce_force
+        
+        # Move the scrapper backward
+        self.rect.x -= move_x
+        self.rect.y -= move_y
 
+    def collide_player(self, player):
+        if self.rect.colliderect(player.rect):
+            self.bounce(player)
 
 
 class DecepticonGroup:
