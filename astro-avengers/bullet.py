@@ -91,6 +91,31 @@ class EnemyBullet:
         pygame.draw.circle(screen, (255, 255, 0), self.rect.center, 5)  
 
 
+class DecepticonBullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, angle, speed=25, radius=5, color=(255, 0, 0)):
+        super().__init__()
+        self.x = x
+        self.y = y
+        self.angle = angle  # Angle in radians at which the bullet will travel
+        self.speed = speed  # Bullet speed
+        self.radius = radius  # Bullet size (radius of the circle)
+        self.color = color  # Bullet color
+        self.rect = pygame.Rect(self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2)
+    
+    def update(self):
+        # Move the bullet in the direction of the angle
+        self.x += math.cos(self.angle) * self.speed
+        self.y += math.sin(self.angle) * self.speed
+        self.rect.center = (self.x, self.y)  # Update the rect position to the new coordinates
+        
+        # Remove the bullet if it goes off-screen
+        if self.x < 0 or self.x > SCREEN_WIDTH or self.y < 0 or self.y > SCREEN_HEIGHT:
+            self.kill()  # Remove bullet from the group
+
+    def draw(self, screen):
+        # Draw the bullet as a simple filled circle
+        pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.radius)
+
 
 class DoubleBullet:
     def __init__(self, x, y):
