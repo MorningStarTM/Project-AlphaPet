@@ -238,7 +238,7 @@ class NewPet2(pygame.sprite.Sprite):
 
 
 class NewPet(pygame.sprite.Sprite):
-    def __init__(self, scale_factor=0.9):
+    def __init__(self, scale_factor=0.4):
         super().__init__()
         # Load and scale the image
         original_image = pygame.image.load(PET_IMAGE).convert_alpha()
