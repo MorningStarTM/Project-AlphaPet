@@ -17,6 +17,7 @@ class Player:
         self.missile_count = 10
         self.health = 100
         self.bullet_type = 0  
+        self.missile_type = 0
         
 
     
@@ -41,7 +42,7 @@ class Player:
 
     def launch_missile(self):
         if self.missile_count != 0:
-            missile = Missile(self.rect.centerx, self.rect.top)
+            missile = Missile(self.rect.centerx, self.rect.top, self.missile_type)
             self.missiles.append(missile)
             self.missile_count -= 1
 
@@ -49,6 +50,11 @@ class Player:
         """Cycles through available bullet types"""
         self.bullet_type = (self.bullet_type + 1) % 3  # Assuming 3 types: normal, double, golden
         print(self.bullet_type)
+
+    def cycle_missile_type(self):
+        """Cycles through available bullet types"""
+        self.missile_type = (self.missile_type + 1) % 2  
+        print(self.missile_type)
 
 
     
