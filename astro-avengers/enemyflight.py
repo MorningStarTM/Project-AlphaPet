@@ -3,7 +3,7 @@ import os
 from const import *  # Import constants such as SCREEN_WIDTH, SCREEN_HEIGHT, etc.
 from player import Player  # Import Player class
 import random
-from bullet import EnemyBullet
+from bullet import EnemyBullet, DecepticonBullet
 import math
 from explosion import Explosion
 
@@ -79,11 +79,12 @@ class DummyEnemyFlight:
         self.health = 100  # Set initial health
         self.shoot_timer = 0
         self.shoot_interval = 60  # Time between shots in frames
-        self.bullets = []
+        #self.bullets = []
         self.explosion = None  # Explosion attribute
         self.is_dead = False  # Flag to mark the enemy as dead
-        self.bounce_distance = 4  
         self.angle = 0
+        self.bullets = pygame.sprite.Group()
+        self.bounce_distance = 4
 
     def update(self):
         if self.is_dead:
@@ -96,12 +97,11 @@ class DummyEnemyFlight:
         # Calculate the angle to the player
         dx = self.player.rect.centerx - self.rect.centerx
         dy = self.player.rect.centery - self.rect.centery
-        angle = math.atan2(dy, dx)
-        self.angle = angle
+        self.angle = math.atan2(dy, dx)
         
         # Update the position based on the angle
-        self.rect.x += math.cos(angle) * self.speed
-        self.rect.y += math.sin(angle) * self.speed
+        self.rect.x += math.cos(self.angle) * self.speed
+        self.rect.y += math.sin(self.angle) * self.speed
         
         # Ensure the enemy stays within its segment
         if self.rect.left < self.segment.left:
@@ -114,7 +114,7 @@ class DummyEnemyFlight:
             self.rect.bottom = self.segment.bottom
         
         # Rotate the image to face the player
-        self.rotate(angle - math.pi / 2)
+        self.rotate(self.angle - math.pi / 2)
         
         # Update bullets
         for bullet in self.bullets:
@@ -132,6 +132,7 @@ class DummyEnemyFlight:
         if self.health <= 0:
             self.trigger_explosion()
 
+
     def trigger_explosion(self):
         """Trigger the explosion immediately and mark the enemy as dead"""
         if not self.explosion:
@@ -146,26 +147,26 @@ class DummyEnemyFlight:
 
     def shoot(self):
         # Create an enemy bullet aimed at the player's position
-        bullet = EnemyBullet(self.rect.centerx, self.rect.bottom, angle=self.angle)
-        self.bullets.append(bullet)
+        bullet = DecepticonBullet(self.rect.centerx, self.rect.centery, self.angle, color=YELLOW)
+        self.bullets.add(bullet)
 
     def draw(self, screen):
-        screen.blit(self.image, self.rect)
-
+        for bullet in self.bullets:
+            bullet.draw(screen)
+            
         if self.explosion:
             self.explosion.draw(screen)
             if self.explosion.done:
                 return  # Stop drawing if explosion is done
 
-        for bullet in self.bullets:
-            bullet.draw(screen)
+        screen.blit(self.image, self.rect)
 
         # Draw health bar
         if self.health > 0:
-            health_bar_width = 40
+            health_bar_width = 70
             health_bar_height = 5
             health_bar_x = self.rect.centerx - health_bar_width // 2
-            health_bar_y = self.rect.top - 10
+            health_bar_y = self.rect.top - 5
 
             # Draw the background of the health bar
             pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
@@ -173,27 +174,33 @@ class DummyEnemyFlight:
             pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 100) * health_bar_width, health_bar_height))
 
     
-    def bounce(self, player):
-        """Bounce the enemy back upon collision with the player."""
-        # Calculate the direction to move away from the player
-        dx = self.rect.centerx - player.rect.centerx
-        dy = self.rect.centery - player.rect.centery
-        angle = math.atan2(dy, dx)
-        
-        # Move the enemy in the opposite direction
-        self.rect.x += math.cos(angle) * self.bounce_distance
-        self.rect.y += math.sin(angle) * self.bounce_distance
-
-
     def collide(self, bullet):
         if self.rect.colliderect(bullet.rect):
-            self.health -= 10  # Reduce health for each collision
+            self.health -= 5  # Reduce health for each collision
             return True
         return False
     
+    def bounce(self):
+        """Bounce backward upon collision."""
+        # Calculate the direction to move backward from the player
+        dx = self.player.rect.centerx - self.rect.centerx
+        dy = self.player.rect.centery - self.rect.centery
+        distance = math.hypot(dx, dy)
+        if distance == 0:
+            distance = 1  # Prevent division by zero
+        
+        # Normalize the direction
+        move_x = (dx / distance) * self.bounce_force
+        move_y = (dy / distance) * self.bounce_force
+        
+        # Move the scrapper backward
+        self.rect.x -= move_x
+        self.rect.y -= move_y
+
     def collide_player(self, player):
         if self.rect.colliderect(player.rect):
             self.bounce(player)
+
     
 
 LEFT_SEGMENT = pygame.Rect(0, 0, SCREEN_WIDTH // 3, SCREEN_HEIGHT)
