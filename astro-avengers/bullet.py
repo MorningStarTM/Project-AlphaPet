@@ -2,8 +2,13 @@ from const import *
 import math
 
 class Bullet:
-    def __init__(self, x, y):
+    def __init__(self, x, y, flag=None):
         self.image = BULLET_IMAGE
+        if flag == 1:
+            self.image = DOUBLE_BULLET_IMAGE
+        elif flag == 2:
+            self.image = GOLDEN_BULLET_IMAGE
+            
         self.rect = self.image.get_rect()
         self.rect.centerx = x
         self.rect.bottom = y
@@ -130,3 +135,6 @@ class DoubleBullet:
     
     def draw(self, screen):
         screen.blit(self.image, self.rect)
+
+
+    
