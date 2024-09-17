@@ -48,7 +48,7 @@ class PetBullet(pygame.sprite.Sprite):
 
 
 class AnimatedBullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, angle, images, speed=5):
+    def __init__(self, x, y, angle, images, speed=7):
         super().__init__()
         self.images = images  # List of bullet animation frames
         self.current_frame = 0  # Track current frame in animation
@@ -71,8 +71,8 @@ class AnimatedBullet(pygame.sprite.Sprite):
 
         # Move the bullet
         radians = math.radians(self.angle)
-        dx = math.cos(radians) * self.speed
-        dy = math.sin(radians) * self.speed
+        dx = math.sin(radians) * self.speed
+        dy = math.cos(radians) * self.speed
         self.x += dx
         self.y += dy
         self.rect.center = (self.x, self.y)
