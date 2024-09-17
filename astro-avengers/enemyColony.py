@@ -13,9 +13,10 @@ class DiamondHead:
         self.player = player  # Store reference to the player
         self.rect.x = SCREEN_WIDTH // 2
         self.rect.y = 0  # Start at the top of the segment
-        self.speed = 3  # Speed of the enemy
+        self.speed = 6  # Speed of the enemy
         self.health = 400  # Set initial health
         self.shoot_timer = 0
+        self.laser_timer = 0
         self.shoot_interval = 60  # Time between shots in frames
         #self.bullets = []
         self.explosion = None  # Explosion attribute
@@ -85,13 +86,13 @@ class DiamondHead:
             self.trigger_explosion()
 
         # Fire the laser weapon if it's time
-        if self.laser_active:
-            if current_time - self.last_laser_fire_time > self.laser_fire_duration:
-                self.laser_active = False  # Laser is done firing
-        else:
-            if current_time - self.last_laser_fire_time > self.laser_cooldown:
-                self.fire_laser()
-                self.last_laser_fire_time = current_time
+        self.laser_timer += 1
+        print(self.laser_timer)
+        if self.laser_timer >= 300:
+            self.fire_laser()
+            if self.laser_timer >= 400:
+                self.laser_timer = 0
+                self.laser_active = False
         
     def fire_laser(self):
         """Activate the laser weapon and manage its state."""
@@ -103,15 +104,15 @@ class DiamondHead:
         """Draw the laser beam when active."""
         if self.laser_active:
             # Calculate the end position of the laser beam
-            laser_length = 800  # Customize the length as needed
+            laser_length = SCREEN_HEIGHT  # Customize the length as needed
             end_x1 = self.rect.centerx-50 + math.sin(0) * laser_length
             end_y1 = self.rect.centery + math.cos(0) * laser_length
             
             end_x2 = self.rect.centerx+50 + math.sin(0) * laser_length
 
             # Draw the laser beam using the color from const.py (assuming it's stored as LASER_COLOR)
-            pygame.draw.line(screen, LASER_COLOR, (self.rect.centerx-50, self.rect.centery), (end_x1, end_y1), 4)
-            pygame.draw.line(screen, LASER_COLOR, (self.rect.centerx+50, self.rect.centery), (end_x2, end_y1), 4)
+            pygame.draw.line(screen, ICE_LASER_COLOR, (self.rect.centerx-50, self.rect.centery), (end_x1, end_y1), 4)
+            pygame.draw.line(screen, ICE_LASER_COLOR, (self.rect.centerx+50, self.rect.centery), (end_x2, end_y1), 4)
             # Handle damage or interactions with the player
             if self.rect.colliderect(self.player.rect):
                 self.player.health -= 1  # Example: Decrease player health when hit by the laser
