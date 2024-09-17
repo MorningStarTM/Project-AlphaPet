@@ -27,7 +27,14 @@ class DiamondHead:
         self.missiles = []
         self.missile_interval = 20
 
+        self.laser_cooldown = 200  # Cooldown duration in ms
+        self.laser_fire_duration = 300  # Fire duration in ms
+        self.laser_active = False  # Is laser currently active?
+        self.last_laser_fire_time = 0  # 
+
+
     def update(self):
+        current_time = pygame.time.get_ticks()  
 
         if self.is_dead:
             if self.explosion:
@@ -76,8 +83,40 @@ class DiamondHead:
         # Check if health is depleted
         if self.health <= 0:
             self.trigger_explosion()
+
+        # Fire the laser weapon if it's time
+        if self.laser_active:
+            if current_time - self.last_laser_fire_time > self.laser_fire_duration:
+                self.laser_active = False  # Laser is done firing
+        else:
+            if current_time - self.last_laser_fire_time > self.laser_cooldown:
+                self.fire_laser()
+                self.last_laser_fire_time = current_time
         
-        
+    def fire_laser(self):
+        """Activate the laser weapon and manage its state."""
+        self.laser_active = True
+        # Set the laser duration
+        self.last_laser_fire_time = pygame.time.get_ticks()
+
+    def draw_laser(self, screen):
+        """Draw the laser beam when active."""
+        if self.laser_active:
+            # Calculate the end position of the laser beam
+            laser_length = 800  # Customize the length as needed
+            end_x1 = self.rect.centerx-50 + math.sin(0) * laser_length
+            end_y1 = self.rect.centery + math.cos(0) * laser_length
+            
+            end_x2 = self.rect.centerx+50 + math.sin(0) * laser_length
+
+            # Draw the laser beam using the color from const.py (assuming it's stored as LASER_COLOR)
+            pygame.draw.line(screen, LASER_COLOR, (self.rect.centerx-50, self.rect.centery), (end_x1, end_y1), 4)
+            pygame.draw.line(screen, LASER_COLOR, (self.rect.centerx+50, self.rect.centery), (end_x2, end_y1), 4)
+            # Handle damage or interactions with the player
+            if self.rect.colliderect(self.player.rect):
+                self.player.health -= 1  # Example: Decrease player health when hit by the laser
+
+
     def trigger_explosion(self):
         """Trigger the explosion immediately and mark the enemy as dead"""
         if not self.explosion:
@@ -109,6 +148,8 @@ class DiamondHead:
         
         for missile in self.missiles:
             missile.draw(screen)
+        
+        self.draw_laser(screen)
             
         if self.explosion:
             self.explosion.draw(screen)
