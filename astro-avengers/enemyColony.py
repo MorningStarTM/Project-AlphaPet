@@ -3,7 +3,7 @@ import math
 import random
 from const import *
 from explosion import Explosion
-from bullet import DecepticonBullet
+from bullet import DecepticonBullet, ImageEnemyBullet, AnimatedBullet
 
 class DiamondHead:
     def __init__(self, player):
@@ -23,8 +23,12 @@ class DiamondHead:
         self.angle = 0
         self.bounce_distance = 4
         self.bullets = pygame.sprite.Group()
+        self.has_ice_bullet = random.choice([True, False])  
+        self.missiles = []
+        self.missile_interval = 20
 
     def update(self):
+
         if self.is_dead:
             if self.explosion:
                 self.explosion.update()
@@ -39,15 +43,13 @@ class DiamondHead:
         
         # Update the position based on the angle
         self.rect.x += math.cos(self.angle) * self.speed
-        self.rect.y += math.sin(self.angle) * self.speed
+        #self.rect.y += math.sin(self.angle) * self.speed
         
         if self.rect.top < 0:
             self.rect.top = 0
         if self.rect.bottom > SCREEN_HEIGHT-400:
             self.rect.bottom = SCREEN_HEIGHT-400
         
-        # Rotate the image to face the player
-        self.rotate(self.angle - math.pi / 2)
         
         # Update bullets
         for bullet in self.bullets:
@@ -55,30 +57,35 @@ class DiamondHead:
             if bullet.rect.bottom < 0:
                 self.bullets.remove(bullet)
 
+        # missile updated
+        for missile in self.missiles:
+            missile.update()
+            if missile.rect.bottom < 0:
+                self.missiles.remove(missile)
+
         # Handle shooting
         self.shoot_timer += 1
         if self.shoot_timer >= self.shoot_interval:
-            self.shoot()
+            self.launch()
             self.shoot_timer = 0
+        
+        """if self.shoot_timer >= self.missile_interval:
+            self.launch()
+            self.shoot_timer = 0"""
 
         # Check if health is depleted
         if self.health <= 0:
             self.trigger_explosion()
-
-
+        
+        
     def trigger_explosion(self):
         """Trigger the explosion immediately and mark the enemy as dead"""
         if not self.explosion:
             self.explosion = Explosion(self.rect.centerx, self.rect.centery)
             self.is_dead = True  # Set the flag to indicate the enemy is dead
 
-    def rotate(self, angle):
-        """ Rotate the enemy image to face the player """
-        rotated_image = pygame.transform.rotate(self.original_image, -math.degrees(angle))
-        self.rect = rotated_image.get_rect(center=self.rect.center)  # Adjust rect position
-        self.image = rotated_image
 
-    def shoot(self):
+    def triple_shoot(self):
         # Fire three bullets: one straight, and two at ±45 degrees
         angles = [self.angle, self.angle + math.radians(25), self.angle - math.radians(25)]
         
@@ -86,21 +93,33 @@ class DiamondHead:
             bullet = DecepticonBullet(self.rect.centerx, self.rect.centery, angle, color=YELLOW)
             self.bullets.add(bullet)
 
+    """def triple_shoot(self):
+        bullet = DecepticonBullet(self.rect.centerx, self.rect.centery, angle, color=YELLOW)
+        self.bullets.add(bullet)"""
+
+    
+    def launch(self):
+        #missile = ImageEnemyBullet(self.rect.centerx, self.rect.centery, self.angle)
+        missile = AnimatedBullet(self.rect.centerx, self.rect.centery, self.angle, images=ANIMATED_BULLET_IMAGES)
+        self.missiles.append(missile)
+
     def draw(self, screen):
         for bullet in self.bullets:
             bullet.draw(screen)
+        
+        for missile in self.missiles:
+            missile.draw(screen)
             
         if self.explosion:
             self.explosion.draw(screen)
             if self.explosion.done:
                 return  # Stop drawing if explosion is done
-
         screen.blit(self.image, self.rect)
 
         # Draw health bar
         if self.health > 0:
-            health_bar_width = 70
-            health_bar_height = 5
+            health_bar_width = 100
+            health_bar_height = 12
             health_bar_x = self.rect.centerx - health_bar_width // 2
             health_bar_y = self.rect.top - 5
 
