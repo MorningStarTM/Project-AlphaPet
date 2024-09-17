@@ -39,9 +39,12 @@ class DiamondHead:
         
         # Update the position based on the angle
         self.rect.x += math.cos(self.angle) * self.speed
-        #self.rect.y += math.sin(self.angle) * self.speed
+        self.rect.y += math.sin(self.angle) * self.speed
         
-        
+        if self.rect.top < 0:
+            self.rect.top = 0
+        if self.rect.bottom > SCREEN_HEIGHT-400:
+            self.rect.bottom = SCREEN_HEIGHT-400
         
         # Rotate the image to face the player
         self.rotate(self.angle - math.pi / 2)
@@ -76,9 +79,12 @@ class DiamondHead:
         self.image = rotated_image
 
     def shoot(self):
-        # Create an enemy bullet aimed at the player's position
-        bullet = DecepticonBullet(self.rect.centerx, self.rect.centery, self.angle, color=YELLOW)
-        self.bullets.add(bullet)
+        # Fire three bullets: one straight, and two at ±45 degrees
+        angles = [self.angle, self.angle + math.radians(25), self.angle - math.radians(25)]
+        
+        for angle in angles:
+            bullet = DecepticonBullet(self.rect.centerx, self.rect.centery, angle, color=YELLOW)
+            self.bullets.add(bullet)
 
     def draw(self, screen):
         for bullet in self.bullets:
@@ -101,7 +107,7 @@ class DiamondHead:
             # Draw the background of the health bar
             pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
             # Draw the current health of the enemy
-            pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 100) * health_bar_width, health_bar_height))
+            pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 400) * health_bar_width, health_bar_height))
 
     
     def collide(self, bullet):
@@ -138,7 +144,7 @@ class DiamondHeadGroup:
         self.player = player
         self.enemies = self.create_group()
         self.spawn_timer = 0
-        self.spawn_interval = 600  # Frames between each spawn
+        self.spawn_interval = 8000  # Frames between each spawn
 
     def create_group(self):
         # Shuffle segments and create enemies in segments
