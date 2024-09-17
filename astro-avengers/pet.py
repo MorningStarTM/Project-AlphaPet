@@ -2,151 +2,6 @@ from const import *
 from bullet import Bullet, ImageEnemyBullet, PetBullet
 import math
 
-
-class AdvancedPet:
-    def __init__(self):
-        self.image = PET_IMAGE
-        self.rect = self.image.get_rect()
-        self.rect.center = (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 50)
-        self.speed = 5
-        self.bullets = []
-        self.missiles = []
-        self.life = 3
-        self.ammunition = 500
-        self.shield = False
-        self.missile_count = 10
-        self.health = 200
-        
-        self.max_vel = 6
-        self.vel = 0
-        self.rotation_vel = 5
-        self.angle = 0
-        self.x, self.y = self.rect.center
-        self.acceration = 0.1
-        self.bullets = pygame.sprite.Group()
-
-
-    def rotate(self, left=False, right=False):
-        if left:
-            self.angle += self.rotation_vel
-        elif right:
-            self.angle -= self.rotation_vel
-
-    
-    def move_forward(self):
-        self.vel = self.max_vel
-        self.move()
-
-    def move_backward(self):
-        self.vel = -self.max_vel
-        self.move()
-
-    def move(self):
-        radians = math.radians(self.angle)
-        vertical = math.cos(radians) * self.vel
-        horizontal = math.sin(radians) * self.vel
-
-        self.y -= vertical
-        self.x -= horizontal
-
-    def reduce_speed(self):
-        self.vel = max(self.vel - self.acceration / 2, 0)
-        self.move()
-
-    def bounce(self):
-        self.vel = -self.vel
-        self.move()
-
-    def car_collide(self, other_car):
-        # Check for pixel-level collision with another car
-        offset = (int(other_car.x - self.x), int(other_car.y - self.y))
-        overlap = self.get_mask().overlap(other_car.get_mask(), offset)
-        return overlap is not None
-    
-
-    def shoot(self):
-        """Create a bullet and add it to the list of bullets."""
-        if self.ammunition > 0:
-            bullet = PetBullet(self.x, self.y, math.radians(self.angle))
-            self.bullets.add(bullet)
-            self.ammunition -= 1  # Decrease ammunition count
-
-    
-    def update(self):
-        #self.move()  # Update player position
-
-        # Update bullets
-        for bullet in self.bullets:
-            bullet.update()
-            # Remove bullet if it goes off-screen
-            if bullet.rect.bottom < 0 or bullet.rect.top > SCREEN_HEIGHT or bullet.rect.right < 0 or bullet.rect.left > SCREEN_WIDTH:
-                self.bullets.remove(bullet)
-
-
-    def draw(self, win):
-        blit_rotate_center(win, self.image, (self.x, self.y), self.angle)
-        self.bullets.draw(win)
-        
-    def update_bullets(self):
-        self.bullets.update()
-
-
-
-
-class Pet:
-    def __init__(self):
-        self.image = PET_IMAGE
-        self.rect = self.image.get_rect()
-        self.rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT - 50)
-        self.speed = 5
-        self.bullets = []
-        self.missiles = []
-        self.life = 3
-        self.ammunition = 500
-        self.shield = False
-        self.missile_count = 10
-        self.health = 100
-        
-
-    
-    def move(self, dx, dy):
-        self.rect.x += dx
-        self.rect.y += dy
-
-        # Ensure the player stays within the screen bounds
-        if self.rect.left < 0:
-            self.rect.left = 0
-        if self.rect.right > SCREEN_WIDTH:
-            self.rect.right = SCREEN_WIDTH
-        if self.rect.top < 0:
-            self.rect.top = 0
-        if self.rect.bottom > SCREEN_HEIGHT:
-            self.rect.bottom = SCREEN_HEIGHT
-
-
-    def fire_bullet(self):
-        bullet = Bullet(self.rect.centerx, self.rect.top)
-        self.bullets.append(bullet)
-
-    
-    def update(self):
-        # Update bullets
-        for bullet in self.bullets:
-            bullet.update()
-            if bullet.rect.bottom < 0:
-                self.bullets.remove(bullet)
-                
-
-
-    def draw(self, screen):
-        screen.blit(self.image, self.rect)
-        for bullet in self.bullets:
-            bullet.draw(screen)
-        for missile in self.missiles:
-            missile.draw(screen)
-
-
-
 class NewPet2(pygame.sprite.Sprite):
     def __init__(self, scale_factor=0.9):
         super().__init__()
@@ -261,6 +116,7 @@ class NewPet(pygame.sprite.Sprite):
         self.laser_color = (232, 81, 94)  # Laser color as specified
         self.laser_width = 5  # Thickness of the laser
         self.laser_length = SCREEN_HEIGHT  # Length of the laser
+        self.laser_damage = 8  
 
     def rotate(self, left=False, right=False):
         if left:
@@ -281,16 +137,43 @@ class NewPet(pygame.sprite.Sprite):
         self.bullets.draw(win)  # Ensure bullets are drawn
 
         # Draw laser if active
-        if self.laser_active:
-            self.draw_laser(win)
+        #if self.laser_active:
+        #    self.draw_laser(win)
 
-    def draw_laser(self, win):
-        """Draws the laser from the pet to the edge of the screen."""
+    """def draw_laser(self, win):
+        #Draws the laser from the pet to the edge of the screen.
         radians = math.radians(self.angle+180)  # Convert angle to radians
         # Calculate the end position of the laser based on angle
         laser_end_x = self.x + math.sin(radians) * self.laser_length
         laser_end_y = self.y + math.cos(radians) * self.laser_length
+        pygame.draw.line(win, self.laser_color, (self.x, self.y), (laser_end_x, laser_end_y), self.laser_width)"""
+    
+    def draw_laser(self, win, enemies):
+        """Draw the laser from the pet and check for collisions with enemies."""
+        radians = math.radians(self.angle + 180)  # Convert angle to radians
+
+        # Calculate the end position of the laser based on angle
+        laser_end_x = self.x + math.sin(radians) * self.laser_length
+        laser_end_y = self.y + math.cos(radians) * self.laser_length
+
+        # Draw the laser
         pygame.draw.line(win, self.laser_color, (self.x, self.y), (laser_end_x, laser_end_y), self.laser_width)
+
+        # Check for collisions with enemies
+        self.check_laser_collision(enemies, (self.x, self.y), (laser_end_x, laser_end_y))
+
+    def check_laser_collision(self, enemies, laser_start, laser_end):
+        """Check if the laser hits any enemies and reduce their health."""
+        for enemy in enemies:
+            # Check if the laser line intersects the enemy's rect
+            if enemy.rect.clipline(laser_start, laser_end):
+                enemy.health -= self.laser_damage
+                print(f"Laser hit! {enemy.__class__.__name__} health: {enemy.health}")
+                
+                # If enemy's health is zero or less, destroy the enemy
+                if enemy.health <= 0:
+                    print(f"{enemy.__class__.__name__} destroyed!")
+                    enemies.remove(enemy)  # Remove the enemy from the game
 
     def move_forward(self):
         self.vel = self.max_vel
@@ -341,19 +224,6 @@ class NewPet(pygame.sprite.Sprite):
         """Activates or deactivates the laser."""
         self.laser_active = is_firing
 
-    def handle_laser_collision(self, enemies):
-        """Checks if the laser is hitting any enemies and damages them."""
-        if not self.laser_active:
-            return
-
-        radians = math.radians(self.angle)
-        laser_end_x = self.x + math.sin(radians) * self.laser_length
-        laser_end_y = self.y - math.cos(radians) * self.laser_length
-        laser_rect = pygame.Rect(min(self.x, laser_end_x), min(self.y, laser_end_y), abs(laser_end_x - self.x), abs(laser_end_y - self.y))
-
-        for enemy in enemies:
-            if laser_rect.colliderect(enemy.rect):
-                enemy.health -= 1  # Deal damage to the enemy
 
 
 
