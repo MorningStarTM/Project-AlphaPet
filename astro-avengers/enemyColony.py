@@ -14,7 +14,7 @@ class DiamondHead:
         self.rect.x = SCREEN_WIDTH // 2
         self.rect.y = 0  # Start at the top of the segment
         self.speed = 3  # Speed of the enemy
-        self.health = 100  # Set initial health
+        self.health = 400  # Set initial health
         self.shoot_timer = 0
         self.shoot_interval = 60  # Time between shots in frames
         #self.bullets = []
@@ -130,3 +130,41 @@ class DiamondHead:
     def collide_player(self, player):
         if self.rect.colliderect(player.rect):
             self.bounce(player)
+
+
+
+class DiamondHeadGroup:
+    def __init__(self, player):
+        self.player = player
+        self.enemies = self.create_group()
+        self.spawn_timer = 0
+        self.spawn_interval = 600  # Frames between each spawn
+
+    def create_group(self):
+        # Shuffle segments and create enemies in segments
+        return [DiamondHead(self.player)]
+    
+
+    def manage_spawn(self):
+        self.spawn_timer += 1
+        if self.spawn_timer >= self.spawn_interval:
+            self.spawn_timer = 0
+            # Remove off-screen and dead enemies, and add new enemies
+            self.enemies = [enemy for enemy in self.enemies if not enemy.is_dead]
+            while len(self.enemies) < 5:
+                self.enemies.append(DiamondHead(self.player))
+
+    
+    def update(self):
+        self.manage_spawn()  # Manage enemy spawning
+        for enemy in self.enemies:
+            enemy.update()
+            # Check if enemy is off-screen
+            if enemy.rect.top > SCREEN_HEIGHT and not enemy.is_dead:
+                self.enemies.remove(enemy)
+                # Optionally: Add new enemies to keep the group size constant
+                self.enemies.append(DiamondHead(self.player))
+
+    def draw(self, screen):
+        for enemy in self.enemies:
+            enemy.draw(screen)
