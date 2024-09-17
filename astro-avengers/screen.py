@@ -1,13 +1,13 @@
 import pygame
 import os
-from player import Player, check_collisions, AdvancedPlayer
+from player import Player, check_collisions
 from enemyflight import EnemyFlight, DummyEnemyFlight, EnemyGroup
 from decepticons import Decepticon, DecepticonGroup
 from gla import Ammunition, Life, Shield, check_gla_collisions
 from const import *
 from scrappers import ScrapperGroup, Scrapper
 from doubler import Doubler, DoublerGroup
-from pet import Pet
+from pet import NewPet
 
 # Initialize Pygame
 pygame.init()
@@ -124,8 +124,8 @@ def main():
     # Initialize the screen and game elements
     screen = Screen()
     player = Player()
-    pet = Pet()
-    enemy_group = DecepticonGroup(player)  # Initialize with 3 Decepticons
+    pet = NewPet()
+    enemy_group = DoublerGroup(player)  # Initialize with 3 Decepticons
     
     running = True
 
@@ -134,41 +134,55 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LCTRL:
+                if event.key == pygame.K_RCTRL:
                     player.fire_bullet()
-                elif event.key in (pygame.K_SPACE, pygame.K_RCTRL):
+                elif event.key == pygame.K_SPACE:
                     player.launch_missile()
                 elif event.key == pygame.K_LCTRL:
-                    pet.fire_bullet()
+                    pet.shoot()
+                elif event.key == pygame.K_TAB:
+                    player.cycle_bullet_type()
+                elif event.key == pygame.K_q:
+                    player.cycle_missile_type()
 
         # Handle player movement
         keys = pygame.key.get_pressed()
         dx, dy = 0, 0
-        if keys[pygame.K_LEFT]:
-            dx = -player.speed
-        if keys[pygame.K_RIGHT]:
-            dx = player.speed
-        if keys[pygame.K_UP]:
-            dy = -player.speed
-        if keys[pygame.K_DOWN]:
-            dy = player.speed
+        moved = False
+        opponent_moved = False
 
         if keys[pygame.K_a]:
-            dx = -pet.speed
+            dx = -player.speed
         if keys[pygame.K_d]:
-            dx = pet.speed
+            dx = player.speed
         if keys[pygame.K_w]:
-            dy = -pet.speed
+            dy = -player.speed
         if keys[pygame.K_s]:
-            dy = pet.speed
+            dy = player.speed
+
+
+        if keys[pygame.K_LEFT]:
+            pet.rotate(left=True)
+        if keys[pygame.K_RIGHT]:
+            pet.rotate(right=True)
+        if keys[pygame.K_UP]:
+            moved = True
+            pet.move_forward()
+        if keys[pygame.K_DOWN]:
+            moved = True
+            pet.move_backward()
+
+        if keys[pygame.K_m]:
+            pet.fire_laser(True)
+        else:
+            pet.fire_laser(False)
         player.move(dx, dy)
-        pet.move(dx, dy)
+        pet.update()
 
 
         
         # Update game elements
         player.update()
-        pet.update()
         enemy_group.update()  # Pass player position to enemies
         
         # Check for collisions
@@ -177,13 +191,15 @@ def main():
                 if enemy.collide(bullet):
                     player.bullets.remove(bullet)
                     break
-
         
+                
         for missile in player.missiles[:]:
             for enemy in enemy_group.enemies[:]:
                 if enemy.collide(missile):
                     player.missiles.remove(missile)
                     break
+
+        
         
         # Clear screen
         screen.screen.fill((0, 0, 0))
@@ -192,9 +208,12 @@ def main():
         screen.update_screen()
         
         # Draw game elements
-        #pet.draw(screen.screen)
+        pet.draw(screen.screen)
         enemy_group.draw(screen.screen)
-        #player.draw(screen.screen)
+        player.draw(screen.screen)
+
+        if pet.laser_active:
+            pet.draw_laser(screen.screen, enemy_group.enemies)
         
         
         # Draw HUD
@@ -212,8 +231,8 @@ def main2():
     
     # Initialize the screen and game elements
     screen = Screen()
-    player = AdvancedPlayer()
-    pet = Pet()
+    player = Player()
+    pet = NewPet()
 
 
     running = True
