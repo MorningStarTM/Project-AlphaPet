@@ -8,7 +8,7 @@ class Bullet:
             self.image = DOUBLE_BULLET_IMAGE
         elif flag == 2:
             self.image = GOLDEN_BULLET_IMAGE
-            
+
         self.rect = self.image.get_rect()
         self.rect.centerx = x
         self.rect.bottom = y
@@ -47,9 +47,48 @@ class PetBullet(pygame.sprite.Sprite):
 
 
 
+class AnimatedBullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, angle, images, speed=5):
+        super().__init__()
+        self.images = images  # List of bullet animation frames
+        self.current_frame = 0  # Track current frame in animation
+        self.image = self.images[self.current_frame]  # Initial image
+        self.rect = self.image.get_rect(center=(x, y))
+        self.angle = angle
+        self.speed = speed
+        self.animation_speed = 5  # Control the speed of the animation
+        self.animation_counter = 0  # Counter to change frames
+        self.x, self.y = x, y
+
+    def update(self):
+        # Update the animation frame
+        self.animation_counter += 1
+        if self.animation_counter >= self.animation_speed:
+            self.animation_counter = 0
+            self.current_frame = (self.current_frame + 1) % len(self.images)
+            self.image = self.images[self.current_frame]
+            self.rect = self.image.get_rect(center=self.rect.center)
+
+        # Move the bullet
+        radians = math.radians(self.angle)
+        dx = math.cos(radians) * self.speed
+        dy = math.sin(radians) * self.speed
+        self.x += dx
+        self.y += dy
+        self.rect.center = (self.x, self.y)
+
+        # Check if the bullet is off the screen and remove it
+        if self.rect.right < 0 or self.rect.left > SCREEN_WIDTH or self.rect.bottom < 0 or self.rect.top > SCREEN_HEIGHT:
+            self.kill()
+
+    def draw(self, screen):
+        screen.blit(self.image, self.rect)
+
+
+
 class ImageEnemyBullet:
     def __init__(self, x, y, angle):
-        self.original_image = BULLET_IMAGE
+        self.original_image = ICE_BULLET
         self.angle = angle  # Angle at which the bullet is shot
         
         # Rotate the image based on the angle
@@ -71,6 +110,7 @@ class ImageEnemyBullet:
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
+
 
 
 class EnemyBullet:
