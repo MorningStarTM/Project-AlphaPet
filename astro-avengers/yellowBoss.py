@@ -53,7 +53,52 @@ class YellowBoss:
         if distance <= self.vibration_radius:
             self.player.health -= 1  # Reduce player health on collision with wave
 
-    def draw_vibration_wave(self, screen):
-        """Draw the circular vibration wave around the boss."""
-        if self.vibration_active:
-            pygame.draw.circle(screen, WAVE_COLOR, self.rect.center, self.vibration_radius, 2)
+    def trigger_vibration_wave(self):
+        new_wave = VibrationWave(self.rect.center)  # Start wave from boss center
+        self.vibration_waves.append(new_wave)
+
+    def trigger_explosion(self):
+        """Trigger the explosion immediately and mark the boss as dead."""
+        if not self.explosion:
+            self.explosion = Explosion(self.rect.centerx, self.rect.centery)
+            self.is_dead = True  # Set the flag to indicate the boss is dead
+
+    def shoot(self):
+        """Fire bullets towards the player."""
+        bullet = DecepticonBullet(self.rect.centerx, self.rect.centery, self.angle, color=YELLOW)
+        self.bullets.add(bullet)
+
+
+    def draw(self, screen):
+               
+        # Draw all active vibration waves
+        for wave in self.vibration_waves:
+            wave.draw(screen)
+
+        for bullet in self.bullets:
+            bullet.draw(screen)
+
+        if self.explosion:
+            self.explosion.draw(screen)
+            if self.explosion.done:
+                return  # Stop drawing if explosion is done
+
+        # Draw protector ships
+        for ship in self.protector_ships:
+            ship.draw(screen)
+
+        # Draw vibration wave if active
+        #self.draw_vibration_wave(screen)
+
+        # Draw boss
+        screen.blit(self.image, self.rect)
+
+        # Draw health bar
+        if self.health > 0:
+            health_bar_width = 100
+            health_bar_height = 12
+            health_bar_x = self.rect.centerx - health_bar_width // 2
+            health_bar_y = self.rect.top - 5
+
+            pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
+            pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 800) * health_bar_width, health_bar_height))
