@@ -36,6 +36,69 @@ class YellowBoss:
         self.last_wave_time = pygame.time.get_ticks()
 
 
+    def update(self):
+        if self.is_dead:
+            if self.explosion:
+                self.explosion.update()
+                if self.explosion.done:
+                    return  # Stop updating if explosion is done
+            return  # Skip further update if the boss is dead
+
+        # Calculate the angle to the player
+        dx = self.player.rect.centerx - self.rect.centerx
+        dy = self.player.rect.centery - self.rect.centery
+        self.angle = math.atan2(dy, dx)
+
+        # Update protector ships
+        for ship in self.protector_ships:
+            ship.update()
+
+        # Update the position based on the angle
+        self.rect.x += math.cos(self.angle) * self.speed
+
+        if self.rect.top < 0:
+            self.rect.top = 0
+        if self.rect.bottom > SCREEN_HEIGHT - 400:
+            self.rect.bottom = SCREEN_HEIGHT - 400
+
+        # Handle shooting
+        self.shoot_timer += 1
+        if self.shoot_timer >= self.shoot_interval:
+            self.shoot()
+            self.shoot_timer = 0
+
+        # Check if health is depleted
+        if self.health <= 0:
+            self.trigger_explosion()
+
+        # Handle vibration wave attack
+        """self.vibration_timer += 1
+        print(self.vibration_timer)
+        if self.vibration_timer >= self.vibration_interval:
+            self.activate_vibration_wave()"""
+        
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_wave_time > self.wave_cooldown:
+            self.trigger_vibration_wave()
+            self.last_wave_time = current_time
+
+        # Update all active vibration waves
+        for wave in self.vibration_waves[:]:
+            wave.update()
+            if wave.radius > max(SCREEN_WIDTH, SCREEN_HEIGHT):
+                self.vibration_waves.remove(wave)  
+
+        if self.vibration_active:
+            self.vibration_radius += self.vibration_growth_rate
+            if self.vibration_radius > self.vibration_max_radius:
+                self.vibration_active = False  # Deactivate after reaching max radius
+
+        # Collision detection with player and vibration wave
+        if self.vibration_active:
+            self.check_vibration_collision()
+
+            
+
     def trigger_vibration_wave(self):
         new_wave = VibrationWave(self.rect.center)  # Start wave from boss center
         self.vibration_waves.append(new_wave)
