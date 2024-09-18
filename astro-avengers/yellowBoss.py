@@ -117,3 +117,53 @@ class VibrationWave:
     def draw(self, screen):
         pygame.draw.circle(screen, (255, 255, 0), self.center, self.radius, 2)  # Yellow circle outline
 
+
+
+class ProtectorShip:
+    def __init__(self, boss, player):
+        self.image = FX100
+        self.original_image = self.image.copy()
+        self.rect = self.image.get_rect()
+        self.boss = boss
+        self.player = player
+        self.rect.x = random.randint(self.boss.rect.left - 50, self.boss.rect.right + 50)
+        self.rect.y = self.boss.rect.y + 100
+        self.angle = 0
+        self.speed = 3
+        self.bullets = pygame.sprite.Group()
+        self.shoot_timer = 0
+        self.shoot_interval = 90  # Protector ships shoot less frequently
+
+    def update(self):
+        # Move in a circular pattern around the boss
+        dx = self.boss.rect.centerx - self.rect.centerx
+        dy = self.boss.rect.centery - self.rect.centery
+        self.angle += 0.05
+        self.rect.x = self.boss.rect.centerx + math.cos(self.angle) * 100
+        self.rect.y = self.boss.rect.centery + math.sin(self.angle) * 100
+
+        # Handle shooting
+        self.shoot_timer += 1
+        if self.shoot_timer >= self.shoot_interval:
+            self.shoot()
+            self.shoot_timer = 0
+
+        # Update bullets
+        for bullet in self.bullets:
+            bullet.update()
+            if bullet.rect.bottom < 0:
+                self.bullets.remove(bullet)
+
+    def shoot(self):
+        """Shoot bullets towards the player."""
+        angle_to_player = math.atan2(self.player.rect.centery - self.rect.centery,
+                                     self.player.rect.centerx - self.rect.centerx)
+        bullet = DecepticonBullet(self.rect.centerx, self.rect.centery, angle_to_player, color=YELLOW)
+        self.bullets.add(bullet)
+
+    def draw(self, screen):
+        for bullet in self.bullets:
+            bullet.draw(screen)
+        screen.blit(self.image, self.rect)
+
+
