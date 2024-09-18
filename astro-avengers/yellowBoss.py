@@ -24,7 +24,6 @@ class YellowBoss:
         self.angle = 0
         self.bounce_distance = 4
         self.bullets = pygame.sprite.Group()
-        self.protector_ships = [ProtectorShip(self, player) for _ in range(4)]  # 4 protector ships
         self.vibration_timer = 0
         self.vibration_interval = 200  # Interval to trigger the vibration wave
         self.vibration_radius = 100  # Initial radius of vibration wave
@@ -34,9 +33,20 @@ class YellowBoss:
         self.vibration_waves = []  # List to store active vibration waves
         self.wave_cooldown = 500  # Time between waves in milliseconds
         self.last_wave_time = 0
+        # Initialize four protector ships with different angles
+        self.protectors = [
+            ProtectorShip(self, player, math.radians(45)),   # Right side, protector 1
+            ProtectorShip(self, player, math.radians(135)),  # Left side, protector 1
+            ProtectorShip(self, player, math.radians(225)),  # Left side, protector 2
+            ProtectorShip(self, player, math.radians(315))   # Right side, protector 2
+        ]
 
 
     def update(self):
+        # Update all protectors
+        for protector in self.protectors:
+            protector.update()
+
         if self.is_dead:
             if self.explosion:
                 self.explosion.update()
@@ -50,7 +60,7 @@ class YellowBoss:
         self.angle = math.atan2(dy, dx)
 
         # Update protector ships
-        for ship in self.protector_ships:
+        for ship in self.protectors:
             ship.update()
 
         # Update the position based on the angle
@@ -140,6 +150,8 @@ class YellowBoss:
 
 
     def draw(self, screen):
+        for protector in self.protectors:
+            protector.draw(screen)
                
         # Draw all active vibration waves
         for wave in self.vibration_waves:
@@ -154,7 +166,7 @@ class YellowBoss:
                 return  # Stop drawing if explosion is done
 
         # Draw protector ships
-        for ship in self.protector_ships:
+        for ship in self.protectors:
             ship.draw(screen)
 
         # Draw vibration wave if active
@@ -190,27 +202,28 @@ class VibrationWave:
 
 
 class ProtectorShip:
-    def __init__(self, boss, player):
+    def __init__(self, boss, player, angle_offset):
         self.image = FX100
         self.original_image = self.image.copy()
         self.rect = self.image.get_rect()
         self.boss = boss
         self.player = player
-        self.rect.x = random.randint(self.boss.rect.left - 50, self.boss.rect.right + 50)
-        self.rect.y = self.boss.rect.y + 100
-        self.angle = 0
-        self.speed = 3
+        self.angle = angle_offset  # Starting angle for the protector
+        self.orbit_radius = 200  # Distance from the boss
+        self.speed = 0.5
         self.bullets = pygame.sprite.Group()
         self.shoot_timer = 0
         self.shoot_interval = 90  # Protector ships shoot less frequently
 
+        # Set initial position based on angle
+        self.rect.x = self.boss.rect.centerx + math.cos(self.angle) * self.orbit_radius
+        self.rect.y = self.boss.rect.centery + math.sin(self.angle) * self.orbit_radius
+
     def update(self):
         # Move in a circular pattern around the boss
-        dx = self.boss.rect.centerx - self.rect.centerx
-        dy = self.boss.rect.centery - self.rect.centery
-        self.angle += 0.05
-        self.rect.x = self.boss.rect.centerx + math.cos(self.angle) * 100
-        self.rect.y = self.boss.rect.centery + math.sin(self.angle) * 100
+        self.angle += 0.01  # Controls the speed of rotation
+        self.rect.x = self.boss.rect.centerx + math.cos(self.angle) * self.orbit_radius
+        self.rect.y = self.boss.rect.centery + math.sin(self.angle) * self.orbit_radius
 
         # Handle shooting
         self.shoot_timer += 1
@@ -235,5 +248,3 @@ class ProtectorShip:
         for bullet in self.bullets:
             bullet.draw(screen)
         screen.blit(self.image, self.rect)
-
-
