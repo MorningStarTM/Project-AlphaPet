@@ -36,9 +36,9 @@ class YellowBoss:
         # Initialize four protector ships with different angles
         self.protectors = [
             ProtectorShip(self, player, math.radians(45)),   # Right side, protector 1
-            ProtectorShip(self, player, math.radians(135)),  # Left side, protector 1
-            ProtectorShip(self, player, math.radians(225)),  # Left side, protector 2
-            ProtectorShip(self, player, math.radians(315))   # Right side, protector 2
+            ProtectorShip(self, player, math.radians(140)),  # Left side, protector 1
+            ProtectorShip(self, player, math.radians(245)),  # Left side, protector 2
+            ProtectorShip(self, player, math.radians(325))   # Right side, protector 2
         ]
 
 
@@ -209,8 +209,9 @@ class ProtectorShip:
         self.boss = boss
         self.player = player
         self.angle = angle_offset  # Starting angle for the protector
-        self.orbit_radius = 200  # Distance from the boss
-        self.speed = 0.5
+        self.orbit_radius = 120  # Distance from the boss
+        self.speed = 1
+        self.health = 100  # Health of the protector
         self.bullets = pygame.sprite.Group()
         self.shoot_timer = 0
         self.shoot_interval = 90  # Protector ships shoot less frequently
@@ -237,6 +238,17 @@ class ProtectorShip:
             if bullet.rect.bottom < 0:
                 self.bullets.remove(bullet)
 
+    def take_damage(self, damage):
+        """Reduce protector's health and check if it should be destroyed."""
+        self.health -= damage
+        if self.health <= 0:
+            self.vanish()
+
+    def vanish(self):
+        """Vanish the protector."""
+        if self in self.boss.protectors:
+            self.boss.protectors.remove(self)  # Remove from boss's protector list
+
     def shoot(self):
         """Shoot bullets towards the player."""
         angle_to_player = math.atan2(self.player.rect.centery - self.rect.centery,
@@ -247,4 +259,16 @@ class ProtectorShip:
     def draw(self, screen):
         for bullet in self.bullets:
             bullet.draw(screen)
+
+        if self.health > 0:
+            health_bar_width = 100
+            health_bar_height = 12
+            health_bar_x = self.rect.centerx - health_bar_width // 2
+            health_bar_y = self.rect.top - 5
+
+            # Draw the background of the health bar
+            pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
+            # Draw the current health of the enemy
+            pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 400) * health_bar_width, health_bar_height))
+
         screen.blit(self.image, self.rect)
