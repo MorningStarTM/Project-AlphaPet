@@ -8,6 +8,9 @@ from const import *
 from scrappers import ScrapperGroup, Scrapper
 from doubler import Doubler, DoublerGroup
 from pet import NewPet
+from enemyColony import DiamondHead, DiamondHeadGroup
+from yellowBoss import YellowBoss
+import math
 
 # Initialize Pygame
 pygame.init()
@@ -125,11 +128,13 @@ def main():
     screen = Screen()
     player = Player()
     pet = NewPet()
-    enemy_group = DoublerGroup(player)  # Initialize with 3 Decepticons
+    enemy_group = DiamondHeadGroup(player)  # Initialize with 3 Decepticons
     
+    count = 0
     running = True
 
     while running:
+        count += 1
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -179,6 +184,7 @@ def main():
         player.move(dx, dy)
         pet.update()
 
+        
 
         
         # Update game elements
@@ -223,6 +229,130 @@ def main():
         clock.tick(60)
 
     pygame.quit()
+
+
+
+def main7():
+    pygame.init()
+    clock = pygame.time.Clock()
+    
+    # Initialize the screen and game elements
+    screen = Screen()
+    player = Player()
+    pet = NewPet()
+    yellow_boss = YellowBoss(player)  # Initialize YellowBoss
+
+    running = True
+
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RCTRL:
+                    player.fire_bullet()
+                elif event.key == pygame.K_SPACE:
+                    player.launch_missile()
+                elif event.key == pygame.K_LCTRL:
+                    pet.shoot()
+                elif event.key == pygame.K_TAB:
+                    player.cycle_bullet_type()
+                elif event.key == pygame.K_q:
+                    player.cycle_missile_type()
+
+        # Handle player movement
+        keys = pygame.key.get_pressed()
+        dx, dy = 0, 0
+        moved = False
+
+        if keys[pygame.K_a]:
+            dx = -player.speed
+        if keys[pygame.K_d]:
+            dx = player.speed
+        if keys[pygame.K_w]:
+            dy = -player.speed
+        if keys[pygame.K_s]:
+            dy = player.speed
+
+        # Handle pet movement and shooting
+        if keys[pygame.K_LEFT]:
+            pet.rotate(left=True)
+        if keys[pygame.K_RIGHT]:
+            pet.rotate(right=True)
+        if keys[pygame.K_UP]:
+            moved = True
+            pet.move_forward()
+        if keys[pygame.K_DOWN]:
+            moved = True
+            pet.move_backward()
+
+        if keys[pygame.K_m]:
+            pet.fire_laser(True)
+        else:
+            pet.fire_laser(False)
+
+        # Update player and pet positions
+        player.move(dx, dy)
+        pet.update()
+
+        # Update game elements
+        player.update()
+        yellow_boss.update()
+
+        # Check for collisions with YellowBoss
+        for bullet in player.bullets[:]:
+            if yellow_boss.rect.colliderect(bullet.rect):
+                player.bullets.remove(bullet)
+                yellow_boss.health -= 5  # Reduce boss health on bullet collision
+                if yellow_boss.health <= 0:
+                    yellow_boss.trigger_explosion()
+
+        for missile in player.missiles[:]:
+            if yellow_boss.rect.colliderect(missile.rect):
+                player.missiles.remove(missile)
+                yellow_boss.health -= missile.damage  # Reduce boss health on missile collision
+                if yellow_boss.health <= 0:
+                    yellow_boss.trigger_explosion()
+        
+        for bullet in player.bullets[:]:
+            for protector in yellow_boss.protectors:
+                    if protector.rect.colliderect(bullet.rect):
+                        protector.take_damage(5)
+                        player.bullets.remove(bullet)
+                        break  # Bullet hits protector, no further checks
+
+        # Check for collisions between pet's laser and YellowBoss
+        if pet.laser_active:
+            distance_to_boss = math.hypot(pet.rect.centerx - yellow_boss.rect.centerx,
+                                          pet.rect.centery - yellow_boss.rect.centery)
+            if distance_to_boss <= SCREEN_HEIGHT:
+                yellow_boss.health -= pet.laser_damage  # Reduce boss health by laser damage
+                if yellow_boss.health <= 0:
+                    yellow_boss.trigger_explosion()
+
+        # Clear screen
+        screen.screen.fill((0, 0, 0))
+        
+        # Update background and draw it
+        screen.update_screen()
+        
+        # Draw game elements
+        pet.draw(screen.screen)
+        yellow_boss.draw(screen.screen)  # Draw YellowBoss
+        player.draw(screen.screen)
+
+        if pet.laser_active:
+            pet.draw_laser(screen.screen, [yellow_boss])  # Pass YellowBoss as target
+
+        # Draw HUD
+        draw_hud(screen.screen, player)
+        
+        pygame.display.flip()
+        clock.tick(60)
+
+    pygame.quit()
+
+
 
 
 def main2():
