@@ -33,7 +33,7 @@ class YellowBoss:
         self.vibration_growth_rate = 2
         self.vibration_waves = []  # List to store active vibration waves
         self.wave_cooldown = 500  # Time between waves in milliseconds
-        self.last_wave_time = pygame.time.get_ticks()
+        self.last_wave_time = 0
 
 
     def update(self):
@@ -77,10 +77,17 @@ class YellowBoss:
         if self.vibration_timer >= self.vibration_interval:
             self.activate_vibration_wave()"""
         
-        current_time = pygame.time.get_ticks()
-        if current_time - self.last_wave_time > self.wave_cooldown:
-            self.trigger_vibration_wave()
-            self.last_wave_time = current_time
+        self.vibration_timer += 1
+        print(self.vibration_timer)
+        if self.vibration_timer >= 200:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.last_wave_time > self.wave_cooldown:
+                self.trigger_vibration_wave()
+                self.last_wave_time = current_time
+            if self.vibration_timer == 300:
+                self.vibration_timer = 0
+                del self.vibration_waves[-1]
+
 
         # Update all active vibration waves
         for wave in self.vibration_waves[:]:
@@ -97,7 +104,7 @@ class YellowBoss:
         if self.vibration_active:
             self.check_vibration_collision()
 
-            
+
 
     def trigger_vibration_wave(self):
         new_wave = VibrationWave(self.rect.center)  # Start wave from boss center
