@@ -102,3 +102,18 @@ class YellowBoss:
 
             pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
             pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 800) * health_bar_width, health_bar_height))
+
+
+
+class VibrationWave:
+    def __init__(self, center, initial_radius=10, speed=5):
+        self.center = center
+        self.radius = initial_radius
+        self.speed = speed  # How fast the radius expands
+
+    def update(self):
+        self.radius += self.speed  # Increase the radius over time
+
+    def draw(self, screen):
+        pygame.draw.circle(screen, (255, 255, 0), self.center, self.radius, 2)  # Yellow circle outline
+
