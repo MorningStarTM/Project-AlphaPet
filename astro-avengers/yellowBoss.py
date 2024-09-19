@@ -33,6 +33,11 @@ class YellowBoss:
         self.vibration_waves = []  # List to store active vibration waves
         self.wave_cooldown = 500  # Time between waves in milliseconds
         self.last_wave_time = 0
+        self.laser_cooldown = 200  # Cooldown duration in ms
+        self.laser_fire_duration = 300  # Fire duration in ms
+        self.laser_active = False  # Is laser currently active?
+        self.last_laser_fire_time = 0  # 
+        self.laser_timer = 0
         # Initialize four protector ships with different angles
         self.protectors = [
             ProtectorShip(self, player, math.radians(45)),   # Right side, protector 1
@@ -71,11 +76,7 @@ class YellowBoss:
         if self.rect.bottom > SCREEN_HEIGHT - 400:
             self.rect.bottom = SCREEN_HEIGHT - 400
 
-        # Handle shooting
-        self.shoot_timer += 1
-        if self.shoot_timer >= self.shoot_interval:
-            self.shoot()
-            self.shoot_timer = 0
+        
 
         # Check if health is depleted
         if self.health <= 0:
@@ -88,13 +89,12 @@ class YellowBoss:
             self.activate_vibration_wave()"""
         
         self.vibration_timer += 1
-        print(self.vibration_timer)
-        if self.vibration_timer >= 200:
+        if self.vibration_timer >= 300:
             current_time = pygame.time.get_ticks()
             if current_time - self.last_wave_time > self.wave_cooldown:
                 self.trigger_vibration_wave()
                 self.last_wave_time = current_time
-            if self.vibration_timer == 300:
+            if self.vibration_timer == 400:
                 self.vibration_timer = 0
                 del self.vibration_waves[-1]
 
@@ -113,6 +113,15 @@ class YellowBoss:
         # Collision detection with player and vibration wave
         if self.vibration_active:
             self.check_vibration_collision()
+
+        # Fire the laser weapon if it's time
+        self.laser_timer += 1
+        print(self.laser_timer)
+        if self.laser_timer >= 300:
+            self.fire_laser()
+            if self.laser_timer >= 400:
+                self.laser_timer = 0
+                self.laser_active = False
 
 
 
@@ -143,13 +152,33 @@ class YellowBoss:
             self.explosion = Explosion(self.rect.centerx, self.rect.centery)
             self.is_dead = True  # Set the flag to indicate the boss is dead
 
-    def shoot(self):
-        """Fire bullets towards the player."""
-        bullet = DecepticonBullet(self.rect.centerx, self.rect.centery, self.angle, color=YELLOW)
-        self.bullets.add(bullet)
+    def fire_laser(self):
+        """Activate the laser weapon and manage its state."""
+        self.laser_active = True
+        # Set the laser duration
+        self.last_laser_fire_time = pygame.time.get_ticks()
+
+    def draw_laser(self, screen):
+        """Draw the laser beam when active."""
+        if self.laser_active:
+            # Calculate the end position of the laser beam
+            laser_length = SCREEN_HEIGHT  # Customize the length as needed
+            end_x1 = self.rect.centerx-50 + math.sin(0) * laser_length
+            end_y1 = self.rect.centery + math.cos(0) * laser_length
+            
+            end_x2 = self.rect.centerx+50 + math.sin(0) * laser_length
+
+            # Draw the laser beam using the color from const.py (assuming it's stored as LASER_COLOR)
+            pygame.draw.line(screen, ICE_LASER_COLOR, (self.rect.centerx-50, self.rect.centery), (end_x1, end_y1), 4)
+            pygame.draw.line(screen, ICE_LASER_COLOR, (self.rect.centerx+50, self.rect.centery), (end_x2, end_y1), 4)
+            # Handle damage or interactions with the player
+            if self.rect.colliderect(self.player.rect):
+                self.player.health -= 1  # Example: Decrease player health when hit by the laser
 
 
     def draw(self, screen):
+        self.draw_laser(screen)
+        
         for protector in self.protectors:
             protector.draw(screen)
                
