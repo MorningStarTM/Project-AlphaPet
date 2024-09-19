@@ -169,8 +169,8 @@ class YellowBoss:
             end_x2 = self.rect.centerx+50 + math.sin(0) * laser_length
 
             # Draw the laser beam using the color from const.py (assuming it's stored as LASER_COLOR)
-            pygame.draw.line(screen, ICE_LASER_COLOR, (self.rect.centerx-50, self.rect.centery), (end_x1, end_y1), 4)
-            pygame.draw.line(screen, ICE_LASER_COLOR, (self.rect.centerx+50, self.rect.centery), (end_x2, end_y1), 4)
+            pygame.draw.line(screen, YELLOW_LASER, (self.rect.centerx-50, self.rect.centery), (end_x1, end_y1), 4)
+            pygame.draw.line(screen, YELLOW_LASER, (self.rect.centerx+50, self.rect.centery), (end_x2, end_y1), 4)
             # Handle damage or interactions with the player
             if self.rect.colliderect(self.player.rect):
                 self.player.health -= 1  # Example: Decrease player health when hit by the laser
@@ -178,7 +178,7 @@ class YellowBoss:
 
     def draw(self, screen):
         self.draw_laser(screen)
-        
+
         for protector in self.protectors:
             protector.draw(screen)
                
