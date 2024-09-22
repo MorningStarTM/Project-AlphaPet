@@ -38,6 +38,7 @@ class YellowBoss:
         self.laser_active = False  # Is laser currently active?
         self.last_laser_fire_time = 0  # 
         self.laser_timer = 0
+        self.vibration_damage = 10
         # Initialize four protector ships with different angles
         self.protectors = [
             ProtectorShip(self, player, math.radians(45)),   # Right side, protector 1
@@ -77,6 +78,7 @@ class YellowBoss:
             self.rect.bottom = SCREEN_HEIGHT - 400
 
         
+        
 
         # Check if health is depleted
         if self.health <= 0:
@@ -102,6 +104,8 @@ class YellowBoss:
         # Update all active vibration waves
         for wave in self.vibration_waves[:]:
             wave.update()
+            
+
             if wave.radius > max(SCREEN_WIDTH, SCREEN_HEIGHT):
                 self.vibration_waves.remove(wave)  
 
@@ -116,7 +120,7 @@ class YellowBoss:
 
         # Fire the laser weapon if it's time
         self.laser_timer += 1
-        print(self.laser_timer)
+        #print(self.laser_timer)
         if self.laser_timer >= 300:
             self.fire_laser()
             if self.laser_timer >= 400:
@@ -124,7 +128,8 @@ class YellowBoss:
                 self.laser_active = False
 
 
-
+    
+    
     def trigger_vibration_wave(self):
         new_wave = VibrationWave(self.rect.center)  # Start wave from boss center
         self.vibration_waves.append(new_wave)
@@ -175,6 +180,11 @@ class YellowBoss:
             if self.rect.colliderect(self.player.rect):
                 self.player.health -= 1  # Example: Decrease player health when hit by the laser
 
+    def check_vibration_collision(self, wave):
+        """Check if the player is inside the expanding vibration wave."""
+        distance = math.hypot(self.player.rect.centerx - wave.center[0], 
+                              self.player.rect.centery - wave.center[1])
+        return distance <= wave.radius  # Collision occurs if distance <= wave radius
 
     def draw(self, screen):
         self.draw_laser(screen)
