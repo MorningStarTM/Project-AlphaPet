@@ -3,7 +3,7 @@ import os
 from glob import glob
 
 SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 1000
+SCREEN_HEIGHT = 800
 TOTAL_SCREEN_WIDTH = 1200
 GAME_SCREEN_WIDTH = 1000
 HUD_WIDTH = 200
@@ -43,6 +43,11 @@ ICE_BULLET = pygame.image.load("assets\\bullet\\ice.png")
 ANIMATED_BULLET_IMAGES = [pygame.image.load('assets\\bullet\\a1.png'),
                         pygame.image.load('assets\\bullet\\a2.png'),
                         pygame.image.load('assets\\bullet\\a3.png')]
+
+PREDATOR_BULLET_IMAGES = [pygame.image.load('assets\\bullet\\p1.png'),
+                        pygame.image.load('assets\\bullet\\p2.png'),
+                        pygame.image.load('assets\\bullet\\p3.png'),
+                        pygame.image.load('assets\\bullet\\p4.png')]
 
 SHIELD_IMAGE = pygame.image.load("assets\\GLA\\shield.png")
 LIFE_IMAGE = pygame.image.load("assets\\GLA\\ammunition.png")
