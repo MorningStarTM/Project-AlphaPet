@@ -178,3 +178,61 @@ class DoubleBullet:
 
 
     
+class PredatorBullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, angle, player, images, speed=5, max_scale=2):
+        super().__init__()
+        self.images = images  # List of bullet animation frames
+        self.current_frame = 0  # Track current frame in animation
+        self.image = self.images[self.current_frame]
+        self.rect = self.image.get_rect(center=(x, y))
+        self.angle = angle
+        self.speed = speed
+        self.animation_speed = 5  # Control the speed of the animation
+        self.animation_counter = 0  # Counter to change frames
+        self.x, self.y = x, y
+        self.player = player  # Reference to the player for proximity scaling
+        self.max_scale = max_scale  # Maximum scaling factor for the bullet
+        self.time_alive = 0  # Track time since bullet was fired
+        self.max_time = 180  # Time after which bullet reaches max size (frames)
+
+    def update(self):
+        # Update the animation frame
+        self.animation_counter += 1
+        if self.animation_counter >= self.animation_speed:
+            self.animation_counter = 0
+            self.current_frame = (self.current_frame + 1) % len(self.images)
+            self.image = self.images[self.current_frame]
+        
+        # Scale the bullet based on proximity to the player or time
+        self.time_alive += 1  # Increase time alive for time-based scaling
+        self.scale_bullet()
+
+        # Move the bullet
+        radians = math.radians(self.angle)
+        dx = math.sin(radians) * self.speed
+        dy = math.cos(radians) * self.speed
+        self.x += dx
+        self.y += dy
+        self.rect.center = (self.x, self.y)
+
+        # Check if the bullet is off the screen and remove it
+        if self.rect.right < 0 or self.rect.left > SCREEN_WIDTH or self.rect.bottom < 0 or self.rect.top > SCREEN_HEIGHT:
+            self.kill()
+
+    def scale_bullet(self):
+        """Scale the bullet based on its proximity to the player or time."""
+        if self.time_alive < self.max_time:
+            # Scale based on time
+            scale_factor = 1 + (self.time_alive / self.max_time) * (self.max_scale - 1)
+        else:
+            # Max scale reached
+            scale_factor = self.max_scale
+        
+        # Scale the current frame
+        scaled_image = pygame.transform.scale(self.image, 
+                                              (int(self.rect.width * scale_factor), int(self.rect.height * scale_factor)))
+        self.image = scaled_image
+        self.rect = self.image.get_rect(center=self.rect.center)
+
+    def draw(self, screen):
+        screen.blit(self.image, self.rect)
