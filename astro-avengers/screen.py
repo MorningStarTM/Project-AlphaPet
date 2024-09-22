@@ -299,6 +299,13 @@ def main7():
         player.update()
         yellow_boss.update()
 
+        for wave in yellow_boss.vibration_waves[:]:
+            if yellow_boss.check_vibration_collision(wave):
+                player.health -= yellow_boss.vibration_damage
+                yellow_boss.vibration_waves.remove(wave)
+                print("Player Health : ", player.health)
+            
+
         # Check for collisions with YellowBoss
         for bullet in player.bullets[:]:
             if yellow_boss.rect.colliderect(bullet.rect):
