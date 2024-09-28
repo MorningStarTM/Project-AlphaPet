@@ -92,3 +92,13 @@ class Predator:
             # Handle collision with player
             if self.rect.colliderect(self.player.rect):
                 self.player.health -= 1  # Example: Decrease player health
+
+    
+    def draw(self, screen):
+        """Draw the predator and its bullets."""
+        screen.blit(self.image, self.rect)
+        for bullet in self.bullets:
+            bullet.draw(screen)
+
+        # Draw the laser beam
+        self.draw_laser(screen)
