@@ -63,3 +63,9 @@ class Predator:
 
         # Update predator bullets
         self.bullets.update()
+
+
+    def shoot_predator_bullet(self):
+        """Fire the predator bullet."""
+        bullet = PredatorBullet(x=self.rect.centerx, y=self.rect.centery, images=PREDATOR_BULLET_IMAGES)
+        self.bullets.add(bullet)
