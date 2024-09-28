@@ -102,3 +102,10 @@ class Predator:
 
         # Draw the laser beam
         self.draw_laser(screen)
+
+    def collide(self, bullet):
+        """Handle collision with bullets."""
+        if self.rect.colliderect(bullet.rect):
+            self.health -= 10  # Reduce health for each collision
+            return True
+        return False
