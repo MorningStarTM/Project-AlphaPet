@@ -123,3 +123,13 @@ class PredatorGroup:
     def create_group(self):
         # Shuffle segments and create enemies in segments
         return [Predator(self.player)]
+    
+
+    def manage_spawn(self):
+        self.spawn_timer += 1
+        if self.spawn_timer >= self.spawn_interval:
+            self.spawn_timer = 0
+            # Remove off-screen and dead enemies, and add new enemies
+            self.enemies = [enemy for enemy in self.enemies if not enemy.is_dead]
+            while len(self.enemies) < 5:
+                self.enemies.append(Predator(self.player))
