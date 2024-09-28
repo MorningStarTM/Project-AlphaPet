@@ -69,3 +69,26 @@ class Predator:
         """Fire the predator bullet."""
         bullet = PredatorBullet(x=self.rect.centerx, y=self.rect.centery, images=PREDATOR_BULLET_IMAGES)
         self.bullets.add(bullet)
+
+
+    def activate_laser(self):
+        """Activate the laser attack."""
+        self.laser_active = True
+
+    def deactivate_laser(self):
+        """Deactivate the laser attack."""
+        self.laser_active = False
+
+    def draw_laser(self, screen):
+        """Draw the laser if active."""
+        if self.laser_active:
+            laser_length = SCREEN_HEIGHT
+            end_x = self.rect.centerx
+            end_y = self.rect.centery + laser_length
+
+            # Draw the laser beam
+            pygame.draw.line(screen, self.laser_color, (self.rect.centerx, self.rect.centery), (end_x, end_y), 4)
+
+            # Handle collision with player
+            if self.rect.colliderect(self.player.rect):
+                self.player.health -= 1  # Example: Decrease player health
