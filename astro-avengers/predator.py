@@ -133,3 +133,18 @@ class PredatorGroup:
             self.enemies = [enemy for enemy in self.enemies if not enemy.is_dead]
             while len(self.enemies) < 5:
                 self.enemies.append(Predator(self.player))
+
+
+    def update(self):
+        self.manage_spawn()  # Manage enemy spawning
+        for enemy in self.enemies:
+            enemy.update()
+            # Check if enemy is off-screen
+            if enemy.rect.top > SCREEN_HEIGHT and not enemy.is_dead:
+                self.enemies.remove(enemy)
+                # Optionally: Add new enemies to keep the group size constant
+                self.enemies.append(Predator(self.player))
+
+    def draw(self, screen):
+        for enemy in self.enemies:
+            enemy.draw(screen)
