@@ -109,3 +109,17 @@ class Predator:
             self.health -= 10  # Reduce health for each collision
             return True
         return False
+    
+
+
+
+class PredatorGroup:
+    def __init__(self, player):
+        self.player = player
+        self.enemies = self.create_group()
+        self.spawn_timer = 0
+        self.spawn_interval = 8000  # Frames between each spawn
+
+    def create_group(self):
+        # Shuffle segments and create enemies in segments
+        return [Predator(self.player)]
