@@ -20,7 +20,7 @@ class Predator:
         self.laser_cooldown = 500  # Time between laser activations
         self.laser_duration = 300  # How long the laser stays active
         self.laser_color = PREDATOR_LASER  # Color from const.py
-        self.bullets = pygame.sprite.Group()  # Group for predator bullets
+        self.bullets = [] #pygame.sprite.Group()  # Group for predator bullets
         self.predator_bullet_interval = 40  # Time interval for firing predator bullets
         self.attack_cooldown = 100000  # Cooldown for moving downwards to attack
         self.last_attack_time = 0  # Timer for moving on y-axis to attack
@@ -53,7 +53,8 @@ class Predator:
 
         self.handle_attack()
         # Update predator bullets
-        self.bullets.update()
+        for bullet in self.bullets:
+            bullet.update()
 
 
     def handle_attack(self):
@@ -89,7 +90,7 @@ class Predator:
     def shoot_predator_bullet(self):
         """Fire the predator bullet."""
         bullet = PredatorBullet(x=self.rect.centerx, y=self.rect.centery, images=PREDATOR_BULLET_IMAGES)
-        self.bullets.add(bullet)
+        self.bullets.append(bullet)
 
 
     def activate_laser(self):

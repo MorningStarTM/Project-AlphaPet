@@ -193,13 +193,23 @@ class NewPet(pygame.sprite.Sprite):
             self.shield_bar += 1  # Refill the shield bar over time
 
     
-    def handle_shield_collision(self, enemy_projectiles):
-        """Check if any enemy projectiles collide with the shield."""
+    def handle_shield_collision(self, enemies):
+        """Check if enemy bullets or lasers collide with the shield and remove them."""
         if self.shield_active:
-            for projectile in enemy_projectiles:
-                if pygame.sprite.collide_mask(self, projectile):
-                    enemy_projectiles.remove(projectile)  # Remove projectile on shield hit
-                    print("Projectile hit shield!")
+            shield_rect = pygame.Rect(
+                self.rect.centerx - self.shield_radius,
+                self.rect.centery - self.shield_radius,
+                self.shield_radius * 2,
+                self.shield_radius * 2
+            )
+
+            # Check collision for enemy bullets
+            for enemy in enemies.enemies[:]:
+                for bullet in enemy.bullets[:]:
+                    if shield_rect.colliderect(bullet.rect):
+                        enemy.bullets.remove(bullet)
+                        print("Bullet hit the shield!")
+
 
     def handle_kills(self, enemies):
         """Refill the shield bar when the pet or player kills enemies."""
