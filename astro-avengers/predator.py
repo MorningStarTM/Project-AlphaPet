@@ -109,6 +109,8 @@ class Predator:
 
             # Draw the laser beam
             pygame.draw.line(screen, self.laser_color, (self.rect.centerx, self.rect.centery), (end_x, end_y), 4)
+            pygame.draw.line(screen, self.laser_color, (self.rect.centerx-40, self.rect.centery+50), (end_x-40, end_y), 4)
+            pygame.draw.line(screen, self.laser_color, (self.rect.centerx+40, self.rect.centery+50), (end_x+40, end_y), 4)
 
             # Handle collision with player
             if self.rect.colliderect(self.player.rect):
