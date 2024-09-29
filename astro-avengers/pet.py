@@ -118,6 +118,16 @@ class NewPet(pygame.sprite.Sprite):
         self.laser_length = SCREEN_HEIGHT  # Length of the laser
         self.laser_damage = 8  
 
+        # Shield-related properties
+        self.shield_active = False
+        self.shield_duration = 300  # How long the shield stays active (in frames)
+        self.shield_timer = self.shield_duration  # Timer to control shield deactivation
+        self.shield_color = (182, 221, 222)  # Gray color
+        self.shield_radius = 70  # Radius for the shield's arc
+        self.shield_thickness = 8  # Thickness of the shield
+        self.shield_bar_full = 100  # The full state of the shield's time bar
+        self.shield_bar = self.shield_bar_full  # Current state of the shield's time bar
+
     def rotate(self, left=False, right=False):
         if left:
             self.angle += self.rotation_vel
@@ -139,6 +149,55 @@ class NewPet(pygame.sprite.Sprite):
         # Draw laser if active
         #if self.laser_active:
         #    self.draw_laser(win)
+
+        if self.shield_active:
+            self.draw_shield(win)
+
+    def draw_shield(self, win):
+        """Draws an arc-shaped shield around the pet."""
+        pygame.draw.arc(
+            win,
+            self.shield_color,
+            (self.rect.centerx - self.shield_radius, self.rect.centery - self.shield_radius, self.shield_radius * 2, self.shield_radius * 2),
+            math.radians(0),  # Start angle
+            math.radians(180),  # End angle (180 degrees for half arc)
+            self.shield_thickness
+        )
+
+    def activate_shield(self):
+        """Activates the shield if the time bar is full."""
+        if self.shield_bar >= self.shield_bar_full:
+            self.shield_active = True
+            self.shield_timer = 0  # Reset the shield timer
+
+    def update_shield(self):
+        """Handles the shield's state and deactivation based on time."""
+        if self.shield_active:
+            self.shield_timer += 1
+            if self.shield_timer >= self.shield_duration:
+                self.shield_active = False  # Deactivate shield after duration
+                self.shield_bar = 0  # Reset shield bar after usage
+
+        # Gradually refill the shield bar if it's not full
+        if self.shield_bar < self.shield_bar_full:
+            self.shield_bar += 1  # Refill the shield bar over time
+
+    
+    def handle_shield_collision(self, enemy_projectiles):
+        """Check if any enemy projectiles collide with the shield."""
+        if self.shield_active:
+            for projectile in enemy_projectiles:
+                if pygame.sprite.collide_mask(self, projectile):
+                    enemy_projectiles.remove(projectile)  # Remove projectile on shield hit
+                    print("Projectile hit shield!")
+
+    def handle_kills(self, enemies):
+        """Refill the shield bar when the pet or player kills enemies."""
+        for enemy in enemies:
+            if enemy.health <= 0:
+                self.shield_bar += 20  # Increase shield bar for each enemy killed
+                self.shield_bar = min(self.shield_bar, self.shield_bar_full)  # Cap the bar at max
+
 
     """def draw_laser(self, win):
         #Draws the laser from the pet to the edge of the screen.
@@ -219,6 +278,7 @@ class NewPet(pygame.sprite.Sprite):
 
     def update(self):
         self.update_bullets()
+        self.update_shield()
 
     def fire_laser(self, is_firing):
         """Activates or deactivates the laser."""
