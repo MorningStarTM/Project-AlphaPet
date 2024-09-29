@@ -113,8 +113,8 @@ class Predator:
             pygame.draw.line(screen, self.laser_color, (self.rect.centerx+40, self.rect.centery+50), (end_x+40, end_y), 4)
 
             # Handle collision with player
-            if self.rect.colliderect(self.player.rect):
-                self.player.health -= 1  # Example: Decrease player health
+            if self.rect.centerx - 40 <= self.player.rect.centerx <= self.rect.centerx + 40 and self.player.rect.top <= end_y:
+                self.player.health -= 1  # Decrease player health if within laser range
 
     
     def draw(self, screen):
