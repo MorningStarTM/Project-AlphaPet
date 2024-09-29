@@ -248,7 +248,7 @@ class ProtectorShip:
         self.boss = boss
         self.player = player
         self.angle = angle_offset  # Starting angle for the protector
-        self.orbit_radius = 120  # Distance from the boss
+        self.orbit_radius = 140  # Distance from the boss
         self.speed = 1
         self.health = 100  # Health of the protector
         self.bullets = pygame.sprite.Group()
