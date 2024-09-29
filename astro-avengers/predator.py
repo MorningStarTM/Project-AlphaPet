@@ -13,7 +13,7 @@ class Predator:
         self.rect.x = SCREEN_WIDTH // 2
         self.rect.y = 0  # Start at the top
         self.speed = 5  # Movement speed
-        self.health = 1500  # Predator's health
+        self.health = 2500  # Predator's health
         self.shoot_timer = 0
         self.laser_timer = 0
         self.laser_active = False  # Indicates if the laser is active
@@ -136,7 +136,7 @@ class Predator:
             # Draw the background of the health bar
             pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
             # Draw the current health of the enemy
-            pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 400) * health_bar_width, health_bar_height))
+            pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 2500) * health_bar_width, health_bar_height))
 
 
     def collide(self, bullet):
