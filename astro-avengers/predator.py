@@ -22,28 +22,18 @@ class Predator:
         self.laser_color = PREDATOR_LASER  # Color from const.py
         self.bullets = pygame.sprite.Group()  # Group for predator bullets
         self.predator_bullet_interval = 40  # Time interval for firing predator bullets
-        self.attack_cooldown = 1000  # Cooldown for moving downwards to attack
+        self.attack_cooldown = 100000  # Cooldown for moving downwards to attack
         self.last_attack_time = 0  # Timer for moving on y-axis to attack
         self.original_y = self.rect.y  # Store the initial y position
-        self.is_attacking = False  # Track if predator is currently in attack mode
+        self.attack_time = 0  # Track if predator is currently in attack mode
+        self.is_attacking = False
+        self.down_time = 0
 
-    
+
     def update(self):
-        current_time = pygame.time.get_ticks()
-        
+                
         # Handle movement on the x-axis to track the player
         self.rect.x += (self.player.rect.centerx - self.rect.centerx) * 0.05  # Smoothly track player x-axis
-
-        # Handle periodic attack movement on y-axis
-        """if not self.is_attacking and current_time - self.last_attack_time > self.attack_cooldown:
-            self.is_attacking = True
-            self.last_attack_time = current_time
-
-        if self.is_attacking:
-            self.rect.y += self.speed  # Move downward to attack
-            if self.rect.y >= self.player.rect.centery:  # Stop moving downwards after passing the player
-                self.is_attacking = False
-                self.rect.y = self.original_y  # Return to original position"""
 
         # Handle laser activation and deactivation
         self.laser_timer += 1
@@ -61,8 +51,39 @@ class Predator:
                 self.shoot_predator_bullet()
                 self.shoot_timer = 0
 
+        self.handle_attack()
         # Update predator bullets
         self.bullets.update()
+
+
+    def handle_attack(self):
+        """Handles predator moving down to attack and returning to its original position."""
+        
+        if self.is_attacking:
+            self.attack_time += 1
+
+            # Move predator down to the screen height for 200 frames
+            if self.attack_time <= 200:
+                self.rect.y += 5  # Move down
+                if self.rect.y >= SCREEN_HEIGHT - self.rect.height:  # If predator reaches the screen bottom
+                    self.rect.y = SCREEN_HEIGHT - self.rect.height  # Ensure it doesn't go beyond the screen
+
+            # After 200 frames, move back up to the original position
+            elif self.attack_time > 200 and self.rect.y > self.original_y:
+                self.rect.y -= 5  # Move up to the original position
+
+            # Stop attacking once back in the original position
+            if self.rect.y <= self.original_y:
+                self.rect.y = self.original_y  # Ensure it's exactly at the original position
+                self.attack_time = 0  # Reset attack time
+                self.is_attacking = False  # End attack mode
+        else:
+            # Initiate attack every `attack_cooldown`
+            if pygame.time.get_ticks() - self.last_attack_time >= self.attack_cooldown:
+                self.is_attacking = True  # Start attacking
+                self.last_attack_time = pygame.time.get_ticks()  # Reset cooldown timer
+
+
 
 
     def shoot_predator_bullet(self):
