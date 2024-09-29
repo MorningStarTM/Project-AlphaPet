@@ -133,6 +133,13 @@ class Predator:
             return True
         return False
     
+    def check_bullet_collisions(self):
+        """Check for collisions between predator bullets and the player."""
+        for bullet in self.bullets:
+            if bullet.rect.colliderect(self.player.rect):
+                self.player.health -= 5  # Decrease player health on bullet hit
+                bullet.kill()  # Remove the bullet after collision
+    
 
 
 
