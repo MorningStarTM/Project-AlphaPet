@@ -127,6 +127,7 @@ class NewPet(pygame.sprite.Sprite):
         self.shield_thickness = 8  # Thickness of the shield
         self.shield_bar_full = 100  # The full state of the shield's time bar
         self.shield_bar = self.shield_bar_full  # Current state of the shield's time bar
+        self.shield_toggle = False  
 
     def rotate(self, left=False, right=False):
         if left:
@@ -164,6 +165,15 @@ class NewPet(pygame.sprite.Sprite):
             self.shield_thickness
         )
 
+    def toggle_shield(self):
+        """Toggles the shield on/off if the time bar is full."""
+        if self.shield_bar >= self.shield_bar_full or self.shield_active:
+            self.shield_active = not self.shield_active
+            if self.shield_active:
+                self.shield_timer = 0  # Reset the shield timer when activated
+            print("Shield active:", self.shield_active)
+
+
     def activate_shield(self):
         """Activates the shield if the time bar is full."""
         if self.shield_bar >= self.shield_bar_full:
@@ -198,6 +208,14 @@ class NewPet(pygame.sprite.Sprite):
                 self.shield_bar += 20  # Increase shield bar for each enemy killed
                 self.shield_bar = min(self.shield_bar, self.shield_bar_full)  # Cap the bar at max
 
+    def handle_input(self, keys):
+        """Handle player input, including shield activation."""
+        if keys[pygame.K_b]:
+            if not self.shield_toggle:  # Prevent holding down the key from toggling repeatedly
+                self.toggle_shield()
+            self.shield_toggle = True
+        else:
+            self.shield_toggle = False
 
     """def draw_laser(self, win):
         #Draws the laser from the pet to the edge of the screen.
