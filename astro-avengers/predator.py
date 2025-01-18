@@ -43,39 +43,26 @@ class Predator:
         self.original_y = self.rect.y  # Store the initial y position
         self.attack_time = 0  # Track if predator is currently in attack mode
         self.is_attacking = False
+        self.explosion = None  # Explosion instance, initialized to None
+        self.is_dead = False  # Track if the predator is dead
 
 
-    def update_(self):
-                
-        # Handle movement on the x-axis to track the player
-        self.rect.x += (self.player.rect.centerx - self.rect.centerx) * 0.05  # Smoothly track player x-axis
-
-        # Handle laser activation and deactivation
-        self.laser_timer += 1
-        if not self.laser_active and self.laser_timer >= self.laser_cooldown:
-            self.activate_laser()
-            self.laser_timer = 0
-
-        if self.laser_active and self.laser_timer >= self.laser_duration:
-            self.deactivate_laser()
-
-
-        # Handle shooting predator bullets only when laser is inactive
-        if not self.laser_active:
-            self.shoot_timer += 1
-            if self.shoot_timer >= self.predator_bullet_interval:
-                self.shoot_predator_bullet()
-                self.shoot_timer = 0
-
-        self.handle_attack()
-        # Update predator bullets
-        for bullet in self.bullets:
-            bullet.update()
-
-    
     def update(self):
+        # Handle explosion if the predator is dead
+        if self.is_dead:
+            if self.explosion:
+                self.explosion.update()
+                if self.explosion.done:
+                    return  # Explosion is complete; stop updates for this predator
+            return  # Skip further updates while explosion is active
+
+        # Check if health is depleted and trigger explosion
+        if self.health <= 0:
+            self.trigger_explosion()
+            return
+
         # Handle movement on the x-axis to track the player
-        self.rect.x += (self.player.rect.centerx - self.rect.centerx) * 0.05  # Smoothly track player x-axis
+        self.rect.x += (self.player.rect.centerx - self.rect.centerx) * 0.05
 
         # Update lasers to follow the predator's movement
         if self.laser_active:
@@ -95,11 +82,62 @@ class Predator:
             if self.shoot_timer >= self.predator_bullet_interval:
                 self.shoot_predator_bullet()
                 self.shoot_timer = 0
+
+        # Handle other mechanics
+        self.handle_attack()
+        for bullet in self.bullets:
+            bullet.update()
+
+
+
+    def update_(self):
+        # Handle movement on the x-axis to track the player
+        self.rect.x += (self.player.rect.centerx - self.rect.centerx) * 0.05  # Smoothly track player x-axis
+
+        print(f"Health : {self.health}")
+        if self.health <= 0 and not self.is_dead:
+            print("Died")
+            self.trigger_explosion()
+
+        # Update lasers to follow the predator's movement
+        if self.laser_active:
+            self.update_lasers()
+
+        # Handle laser activation and deactivation
+        self.laser_timer += 1
+        if not self.laser_active and self.laser_timer >= self.laser_cooldown:
+            self.activate_laser()
+            self.laser_timer = 0
+
+        if self.laser_active and self.laser_timer >= self.laser_duration:
+            self.deactivate_laser()
+
+        if not self.laser_active:
+            self.shoot_timer += 1
+            if self.shoot_timer >= self.predator_bullet_interval:
+                self.shoot_predator_bullet()
+                self.shoot_timer = 0
+
+        if self.is_dead:
+            if self.explosion:
+                self.explosion.update()
+                if self.explosion.done:
+                    # Explosion animation is complete, mark predator as removable
+                    return  # Stop further updates for the predator
+            return
                 
         # Update other mechanics
         self.handle_attack()
         for bullet in self.bullets:
             bullet.update()
+
+
+    def trigger_explosion(self):
+        """Trigger the explosion immediately and mark the enemy as dead"""
+        if not self.explosion:
+            self.explosion = Explosion(self.rect.centerx, self.rect.centery)
+            self.bullets.clear()
+            self.is_dead = True  # Set the flag to indicate the enemy is dead
 
 
     def handle_attack(self):
@@ -194,6 +232,11 @@ class Predator:
         for bullet in self.bullets:
             bullet.draw(screen)
 
+        if self.is_dead:
+            if self.explosion:
+                self.explosion.draw(screen)
+            return
+
         # Draw the laser beam
         self.draw_laser(screen)
 
@@ -266,10 +309,15 @@ class PredatorGroup:
 
     def update(self):
         self.manage_spawn()  # Manage enemy spawning
-        for enemy in self.enemies:
+        for enemy in self.enemies[:]:  # Iterate over a copy of the list
             enemy.update()
+
+            # Remove the predator if it's dead and its explosion is done
+            if enemy.is_dead and enemy.explosion and enemy.explosion.done:
+                self.enemies.remove(enemy)
+
             # Check if enemy is off-screen
-            if enemy.rect.top > SCREEN_HEIGHT and not enemy.is_dead:
+            elif enemy.rect.top > SCREEN_HEIGHT and not enemy.is_dead:
                 self.enemies.remove(enemy)
                 # Optionally: Add new enemies to keep the group size constant
                 self.enemies.append(Predator(self.player))
