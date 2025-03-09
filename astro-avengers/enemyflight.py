@@ -85,6 +85,7 @@ class DummyEnemyFlight:
         self.angle = 0
         self.bullets = pygame.sprite.Group()
         self.bounce_distance = 4
+        self.bounce_force = 0.8
 
     def update(self):
         if self.is_dead:
@@ -94,14 +95,23 @@ class DummyEnemyFlight:
                     return  # Stop updating if explosion is done
             return  # Skip further update if the enemy is dead
         
-        # Calculate the angle to the player
+        # Calculate the distance to the player
         dx = self.player.rect.centerx - self.rect.centerx
         dy = self.player.rect.centery - self.rect.centery
-        self.angle = math.atan2(dy, dx)
+        distance_to_player = math.hypot(dx, dy)
         
-        # Update the position based on the angle
-        self.rect.x += math.cos(self.angle) * self.speed
-        self.rect.y += math.sin(self.angle) * self.speed
+        min_distance_from_player = 300  # Minimum safe distance from the player
+        
+        if distance_to_player < min_distance_from_player:
+            # If too close, move away from the player
+            angle = math.atan2(dy, dx)
+            self.rect.x -= math.cos(angle) * self.speed
+            self.rect.y -= math.sin(angle) * self.speed
+        else:
+            # Move toward the player if safe distance is maintained
+            self.angle = math.atan2(dy, dx)
+            self.rect.x += math.cos(self.angle) * self.speed
+            self.rect.y += math.sin(self.angle) * self.speed
         
         # Ensure the enemy stays within its segment
         if self.rect.left < self.segment.left:
@@ -121,16 +131,17 @@ class DummyEnemyFlight:
             bullet.update()
             if bullet.rect.bottom < 0:
                 self.bullets.remove(bullet)
-
+        
         # Handle shooting
         self.shoot_timer += 1
         if self.shoot_timer >= self.shoot_interval:
             self.shoot()
             self.shoot_timer = 0
-
+        
         # Check if health is depleted
         if self.health <= 0:
             self.trigger_explosion()
+
 
 
     def trigger_explosion(self):
@@ -199,7 +210,7 @@ class DummyEnemyFlight:
 
     def collide_player(self, player):
         if self.rect.colliderect(player.rect):
-            self.bounce(player)
+            self.bounce()
 
     
 
@@ -243,7 +254,7 @@ class EnemyGroup:
             self.enemies.append(scrapper)
 
     
-    def maintain_distance(self):
+    def maintain_distance_(self):
         """Ensure scrappers maintain a minimum distance from each other."""
         for i, enemy1 in enumerate(self.enemies):
             for enemy2 in self.enemies[i + 1:]:
@@ -257,6 +268,23 @@ class EnemyGroup:
                     move_y = (self.min_distance - distance) * math.sin(angle)
                     enemy2.rect.x += move_x
                     enemy2.rect.y += move_y
+    
+    def maintain_distance(self):
+        """Ensure enemies maintain a minimum distance from each other."""
+        min_distance = 80  # Adjust this value based on spacing needs
+        for i, enemy1 in enumerate(self.enemies):
+            for enemy2 in self.enemies[i + 1:]:
+                distance = math.hypot(enemy1.rect.centerx - enemy2.rect.centerx,
+                                    enemy1.rect.centery - enemy2.rect.centery)
+                if distance < min_distance:
+                    # Move enemy2 away from enemy1
+                    angle = math.atan2(enemy2.rect.centery - enemy1.rect.centery,
+                                    enemy2.rect.centerx - enemy1.rect.centerx)
+                    move_x = (min_distance - distance) * math.cos(angle)
+                    move_y = (min_distance - distance) * math.sin(angle)
+                    enemy2.rect.x += move_x
+                    enemy2.rect.y += move_y
+
 
 
     def manage_spawn(self):
