@@ -68,6 +68,28 @@ class Doubler:
         # Check if health is depleted
         if self.health <= 0:
             self.trigger_explosion()
+        
+        self.maintain_distance_from_player()
+
+    def maintain_distance_from_player(self, min_distance=200):
+        dx = self.player.rect.centerx - self.rect.centerx
+        dy = self.player.rect.centery - self.rect.centery
+        distance = math.hypot(dx, dy)
+        
+        if distance < min_distance:
+            # Calculate direction away from the player
+            if distance == 0:
+                distance = 1  # Avoid division by zero
+            
+            move_x = (dx / distance) * (min_distance - distance)
+            move_y = (dy / distance) * min_distance * 0.1  # Adjust vertically to ensure backward movement
+            
+            # Move the Doubler away from the player
+            self.rect.x -= move_x
+            self.rect.y -= move_y
+            
+            # Keep the enemy within the segment after adjusting
+            self.rect.clamp_ip(self.segment)
 
 
     def trigger_explosion(self):
