@@ -134,14 +134,14 @@ class DoublerGroup:
         return [Doubler(self.player, self.segments[i % len(self.segments)]) for i in range(2)]
 
     def manage_spawn(self):
-        self.spawn_timer += 1
-        if self.spawn_timer >= self.spawn_interval:
-            self.spawn_timer = 0
-            # Remove off-screen and dead enemies, and add new enemies
+        dead_count = sum(enemy.is_dead for enemy in self.enemies)
+
+        if dead_count >= 2:
             self.enemies = [enemy for enemy in self.enemies if not enemy.is_dead]
-            while len(self.enemies) < 5:
+            while len(self.enemies) < 2:
                 segment = random.choice(self.segments)
                 self.enemies.append(Doubler(self.player, segment))
+
 
     def update(self):
         self.manage_spawn()  # Manage enemy spawning
