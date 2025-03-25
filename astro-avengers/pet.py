@@ -26,7 +26,11 @@ class NewPet(pygame.sprite.Sprite):
         self.laser_color = (232, 81, 94)  # Laser color as specified
         self.laser_width = 5  # Thickness of the laser
         self.laser_length = SCREEN_HEIGHT  # Length of the laser
-        self.laser_damage = 8  
+        self.laser_damage = 0.1
+        self.laser_bar_full = 100  # Full state of the laser bar
+        self.laser_bar = self.laser_bar_full  # Current state of the laser bar
+        self.laser_usage_rate = 1  # How fast the laser bar drains
+        self.laser_recovery_rate = 0.5  
 
         # Shield-related properties
         self.shield_active = False
@@ -62,6 +66,9 @@ class NewPet(pygame.sprite.Sprite):
 
         if self.shield_active:
             self.draw_shield(win)
+        
+        #self.draw_laser_bar(win)
+
 
     def draw_shield(self, win):
         """Draw the shield around the pet if it's active."""
@@ -316,10 +323,35 @@ class NewPet(pygame.sprite.Sprite):
         self.update_bullets()
         self.update_shield()
 
-    def fire_laser(self, is_firing):
-        """Activates or deactivates the laser."""
-        self.laser_active = is_firing
+        if not self.laser_active and self.laser_bar < self.laser_bar_full:
+            self.laser_bar += self.laser_recovery_rate
+            self.laser_bar = min(self.laser_bar, self.laser_bar_full)
 
+    def fire_laser(self, is_firing):
+        if is_firing and self.laser_bar > 0:
+            self.laser_active = True
+            self.laser_bar -= self.laser_usage_rate
+            self.laser_bar = max(self.laser_bar, 0)  # Ensure it doesn't go below 0
+        else:
+            self.laser_active = False  # Force laser to stop when empty
+
+        # If laser bar is empty, prevent firing
+        if self.laser_bar <= 0:
+            self.laser_active = False
+
+
+
+
+    def draw_laser_bar(self, win):
+        bar_width = 100
+        bar_height = 10
+        bar_x = self.rect.centerx - bar_width // 2
+        bar_y = self.rect.top - 15
+
+        # Background bar
+        pygame.draw.rect(win, (50, 50, 50), (bar_x, bar_y, bar_width, bar_height))
+        # Current laser level
+        pygame.draw.rect(win, (232, 81, 94), (bar_x, bar_y, int((self.laser_bar / self.laser_bar_full) * bar_width), bar_height))
 
 
 
