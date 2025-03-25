@@ -29,7 +29,7 @@ class DiamondHead:
         self.missile_interval = 20
 
         self.laser_cooldown = 200  # Cooldown duration in ms
-        self.laser_fire_duration = 300  # Fire duration in ms
+        self.laser_fire_duration = 1000  # Fire duration in ms
         self.laser_active = False  # Is laser currently active?
         self.last_laser_fire_time = 0  # 
 
@@ -62,6 +62,10 @@ class DiamondHead:
         # Update bullets
         for bullet in self.bullets:
             bullet.update()
+            if self.player.rect.colliderect(bullet.rect):
+                self.player.health -= 5
+                self.bullets.remove(bullet)
+            
             if bullet.rect.bottom < 0:
                 self.bullets.remove(bullet)
 
@@ -87,7 +91,7 @@ class DiamondHead:
 
         # Fire the laser weapon if it's time
         self.laser_timer += 1
-        print(self.laser_timer)
+        #print(self.laser_timer)
         if self.laser_timer >= 300:
             self.fire_laser()
             if self.laser_timer >= 400:
@@ -114,8 +118,8 @@ class DiamondHead:
             pygame.draw.line(screen, ICE_LASER_COLOR, (self.rect.centerx-50, self.rect.centery), (end_x1, end_y1), 4)
             pygame.draw.line(screen, ICE_LASER_COLOR, (self.rect.centerx+50, self.rect.centery), (end_x2, end_y1), 4)
             # Handle damage or interactions with the player
-            if self.rect.colliderect(self.player.rect):
-                self.player.health -= 1  # Example: Decrease player health when hit by the laser
+            self.check_laser_hits_targets()
+
 
 
     def trigger_explosion(self):
@@ -158,6 +162,14 @@ class DiamondHead:
                 return  # Stop drawing if explosion is done
         screen.blit(self.image, self.rect)
 
+        # Handle damage or interactions with the player
+        if self.rect.colliderect(self.player.rect):
+            self.player.health -= 1  # Example: Decrease player health when hit by the laser
+
+        # Check for collision with the pet (if pet exists)
+        if hasattr(self.player, 'pet') and self.rect.colliderect(self.player.pet.rect):
+            self.player.pet.health -= 1  # Decrease pet health if hit by the laser
+
         # Draw health bar
         if self.health > 0:
             health_bar_width = 100
@@ -197,6 +209,38 @@ class DiamondHead:
     def collide_player(self, player):
         if self.rect.colliderect(player.rect):
             self.bounce(player)
+
+
+
+    def line_rect_collision(self, line_start, line_end, rect):
+        """Check if a line (laser) intersects with a rectangle (target)."""
+        return rect.clipline(line_start, line_end)
+
+
+
+    def check_laser_hits_targets(self):
+        """Check if DiamondHead's laser hits the player or pet and apply damage."""
+        if not self.laser_active:
+            return
+
+        laser_start_1 = (self.rect.centerx - 50, self.rect.centery)
+        laser_end_1 = (laser_start_1[0], SCREEN_HEIGHT)
+
+        laser_start_2 = (self.rect.centerx + 50, self.rect.centery)
+        laser_end_2 = (laser_start_2[0], SCREEN_HEIGHT)
+
+        # Check hit on player
+        if self.line_rect_collision(laser_start_1, laser_end_1, self.player.rect) or \
+        self.line_rect_collision(laser_start_2, laser_end_2, self.player.rect):
+            self.player.health -= 1
+
+        # Check hit on pet (if exists)
+        if hasattr(self.player, "pet"):
+            pet = self.player.pet
+            if self.line_rect_collision(laser_start_1, laser_end_1, pet.rect) or \
+            self.line_rect_collision(laser_start_2, laser_end_2, pet.rect):
+                pet.health -= 1
+
 
 
 
