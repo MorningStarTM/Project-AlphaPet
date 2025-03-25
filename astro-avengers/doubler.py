@@ -71,6 +71,7 @@ class Doubler:
         
         self.maintain_distance_from_player()
 
+
     def maintain_distance_from_player(self, min_distance=200):
         dx = self.player.rect.centerx - self.rect.centerx
         dy = self.player.rect.centery - self.rect.centery
