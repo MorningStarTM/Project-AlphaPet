@@ -229,6 +229,8 @@ class NewPet(pygame.sprite.Sprite):
         # Check for collisions with enemies
         self.check_laser_collision(enemies, (self.x, self.y), (laser_end_x, laser_end_y))
 
+        
+
     def check_laser_collision(self, enemies, laser_start, laser_end):
         """Check if the laser hits any enemies and reduce their health."""
         for enemy in enemies:
