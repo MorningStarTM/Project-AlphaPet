@@ -91,12 +91,13 @@ class YellowBoss:
             self.activate_vibration_wave()"""
         
         self.vibration_timer += 1
-        if self.vibration_timer >= 300:
+        if self.vibration_timer >= 1500:
+            self.laser_active = False
             current_time = pygame.time.get_ticks()
             if current_time - self.last_wave_time > self.wave_cooldown:
                 self.trigger_vibration_wave()
                 self.last_wave_time = current_time
-            if self.vibration_timer == 400:
+            if self.vibration_timer == 1600:
                 self.vibration_timer = 0
                 del self.vibration_waves[-1]
 
@@ -164,21 +165,40 @@ class YellowBoss:
         self.last_laser_fire_time = pygame.time.get_ticks()
 
     def draw_laser(self, screen):
-        """Draw the laser beam when active."""
+        """Draw the laser beam when active and handle collisions with player and pet."""
         if self.laser_active:
-            # Calculate the end position of the laser beam
-            laser_length = SCREEN_HEIGHT  # Customize the length as needed
-            end_x1 = self.rect.centerx-50 + math.sin(0) * laser_length
-            end_y1 = self.rect.centery + math.cos(0) * laser_length
-            
-            end_x2 = self.rect.centerx+50 + math.sin(0) * laser_length
+            laser_length = SCREEN_HEIGHT
 
-            # Draw the laser beam using the color from const.py (assuming it's stored as LASER_COLOR)
-            pygame.draw.line(screen, YELLOW_LASER, (self.rect.centerx-50, self.rect.centery), (end_x1, end_y1), 4)
-            pygame.draw.line(screen, YELLOW_LASER, (self.rect.centerx+50, self.rect.centery), (end_x2, end_y1), 4)
-            # Handle damage or interactions with the player
-            if self.rect.colliderect(self.player.rect):
-                self.player.health -= 1  # Example: Decrease player health when hit by the laser
+            # Laser beam 1 (left)
+            start1 = (self.rect.centerx - 50, self.rect.centery)
+            end1 = (start1[0], start1[1] + laser_length)
+            pygame.draw.line(screen, YELLOW_LASER, start1, end1, 4)
+
+            # Laser beam 2 (right)
+            start2 = (self.rect.centerx + 50, self.rect.centery)
+            end2 = (start2[0], start2[1] + laser_length)
+            pygame.draw.line(screen, YELLOW_LASER, start2, end2, 4)
+
+            # Laser damage logic (collisions)
+            self.check_laser_hit(start1, end1)
+            self.check_laser_hit(start2, end2)
+
+
+    def check_laser_hit(self, laser_start, laser_end):
+        """Check if the laser hits the player or pet and apply damage."""
+        # Check hit on player
+        if self.line_rect_collision(laser_start, laser_end, self.player.rect):
+            self.player.health -= 1
+
+        # Check hit on pet
+        if hasattr(self.player, "pet") and self.line_rect_collision(laser_start, laser_end, self.player.pet.rect):
+            self.player.pet.health -= 1
+
+
+    def line_rect_collision(self, line_start, line_end, rect):
+        """Check if a line (laser) intersects with a rectangle (target)."""
+        return rect.clipline(line_start, line_end)
+
 
     def check_vibration_collision(self, wave):
         """Check if the player is inside the expanding vibration wave."""
@@ -252,8 +272,9 @@ class ProtectorShip:
         self.speed = 1
         self.health = 100  # Health of the protector
         self.bullets = pygame.sprite.Group()
-        self.shoot_timer = 0
         self.shoot_interval = 90  # Protector ships shoot less frequently
+        self.shoot_timer = random.randint(0, self.shoot_interval)
+        
 
         # Set initial position based on angle
         self.rect.x = self.boss.rect.centerx + math.cos(self.angle) * self.orbit_radius
@@ -308,6 +329,6 @@ class ProtectorShip:
             # Draw the background of the health bar
             pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
             # Draw the current health of the enemy
-            pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 400) * health_bar_width, health_bar_height))
+            pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 100) * health_bar_width, health_bar_height))
 
         screen.blit(self.image, self.rect)
