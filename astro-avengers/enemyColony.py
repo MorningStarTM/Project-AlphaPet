@@ -70,8 +70,22 @@ class DiamondHead:
                 self.bullets.remove(bullet)
 
         # missile updated
-        for missile in self.missiles:
+        for missile in self.missiles[:]:  # Use [:] to safely remove items during iteration
             missile.update()
+
+            # Collision with player
+            if missile.rect.colliderect(self.player.rect):
+                self.player.health -= 10  # Or any damage value you want
+                self.missiles.remove(missile)
+                continue
+
+            # Collision with pet (optional)
+            if hasattr(self.player, "pet") and missile.rect.colliderect(self.player.pet.rect):
+                self.player.pet.health -= 10
+                self.missiles.remove(missile)
+                continue
+
+            # Out of screen
             if missile.rect.bottom < 0:
                 self.missiles.remove(missile)
 
