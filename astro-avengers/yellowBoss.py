@@ -16,7 +16,7 @@ class YellowBoss:
         self.rect.x = SCREEN_WIDTH // 2
         self.rect.y = 100  # Start at a fixed position
         self.speed = 4  # Speed of the boss
-        self.health = 800  # Set initial health
+        self.health = 50  # Set initial health
         self.shoot_timer = 0
         self.shoot_interval = 60  # Time between shots in frames
         self.explosion = None  # Explosion attribute
@@ -153,10 +153,12 @@ class YellowBoss:
         self.vibration_waves.append(new_wave)
 
     def trigger_explosion(self):
-        """Trigger the explosion immediately and mark the boss as dead."""
+        """Trigger the explosion immediately and mark the boss as dead"""
         if not self.explosion:
             self.explosion = Explosion(self.rect.centerx, self.rect.centery)
-            self.is_dead = True  # Set the flag to indicate the boss is dead
+            self.is_dead = True
+            self.laser_active = False  # 🚨 Turn off laser on death
+
 
     def fire_laser(self):
         """Activate the laser weapon and manage its state."""
@@ -166,6 +168,8 @@ class YellowBoss:
 
     def draw_laser(self, screen):
         """Draw the laser beam when active and handle collisions with player and pet."""
+        if self.is_dead or not self.laser_active:
+            return
         if self.laser_active:
             laser_length = SCREEN_HEIGHT
 
