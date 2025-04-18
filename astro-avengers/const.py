@@ -3,7 +3,7 @@ import os
 from glob import glob
 
 SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 800
+SCREEN_HEIGHT = 1000
 TOTAL_SCREEN_WIDTH = 1200
 GAME_SCREEN_WIDTH = 1000
 HUD_WIDTH = 200
@@ -18,13 +18,14 @@ def scale_image(path, factor=0.3):
 
 PLAYER_IMAGE = scale_image("assets\\Player_1\\ship_2.png", 0.25)
 PET_IMAGE = "assets\\Player_1\\ship_1.png"
+PET_IMAGE_2 = "assets\\Player_1\\enemy_2.png"
 
 ENEMY_FLIGHT_IMAGE = scale_image("assets\\enemy_1\\Turret09.png", 1.0)
 
 DECEPTICON_IMAGE = scale_image("assets\\enemy_1\\eship1.png", 0.3)
 DOUBLER_IMAGE = scale_image("assets\\enemy_1\\Turret07.png", 0.9)
 
-WHITE_WALKER = scale_image("assets\\enemy_1\\white_walker.png", 0.5)
+PREDATOR = scale_image("assets\\enemy_1\\predator.png", 0.4)
 DIAMOND_HEAD = scale_image("assets\\enemy_1\\diamond_head.png", 0.5)
 LASERER = scale_image("assets\\enemy_1\\laserer.png", 0.5)
 FX100 = scale_image("assets\\enemy_1\\fx100.png", 0.3)
@@ -63,6 +64,7 @@ YELLOW = (192, 230, 28)
 LASER_COLOR = (232, 81, 94)
 ICE_LASER_COLOR = (160, 151, 219)
 YELLOW_LASER = (217, 120, 17)
+PREDATOR_LASER = (178, 242, 247)
 
 LIST_OF_EXPLOSION_IMAGE = [pygame.image.load(i) for i in glob("E:\\github_clone\\Project-AlphaPet\\astro-avengers\\assets\\explosion\\*")]
 
