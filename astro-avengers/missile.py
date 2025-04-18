@@ -11,6 +11,7 @@ class Missile:
         self.rect.centerx = x
         self.rect.bottom = y
         self.speed = 10
+        self.damage = 10
     
     def update(self):
         self.rect.y -= self.speed
