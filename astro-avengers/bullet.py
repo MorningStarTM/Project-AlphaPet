@@ -137,7 +137,7 @@ class EnemyBullet:
 
 
 class DecepticonBullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, angle, speed=25, radius=5, color=(255, 0, 0)):
+    def __init__(self, x, y, angle, speed=18, radius=5, color=(255, 0, 0)):
         super().__init__()
         self.x = x
         self.y = y
