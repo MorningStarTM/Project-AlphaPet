@@ -23,6 +23,7 @@ class Doubler:
         self.explosion = None  # Explosion attribute
         self.is_dead = False  # Flag to mark the enemy as dead
         self.angle = 0
+        self.mask = pygame.mask.from_surface(self.image)
 
     def update(self):
         if self.is_dead:
@@ -161,12 +162,14 @@ class DoublerGroup:
 
         if dead_count >= 2:
             self.enemies = [enemy for enemy in self.enemies if not enemy.is_dead]
-            while len(self.enemies) < 2:
+            while len(self.enemies) < 1:
                 segment = random.choice(self.segments)
                 self.enemies.append(Doubler(self.player, segment))
 
 
+
     def update(self):
+        print(f"{len(self.enemies)}")
         self.manage_spawn()  # Manage enemy spawning
         for enemy in self.enemies:
             enemy.update()

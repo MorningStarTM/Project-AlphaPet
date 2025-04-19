@@ -24,6 +24,7 @@ class Decepticon:
         self.is_dead = False  # Flag to mark the enemy as dead
         self.angle = 0
         self.bullets = pygame.sprite.Group()
+        self.mask = pygame.mask.from_surface(self.image)
 
     def update(self):
         if self.is_dead:
