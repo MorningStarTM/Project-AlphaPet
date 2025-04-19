@@ -1,122 +1,242 @@
-import pygame
-import math
+import os
 import random
-from const import *
+import pygame
 from explosion import Explosion
-from bullet import DecepticonBullet, ImageEnemyBullet, AnimatedBullet
+from bullet import *
+
+class Laser:
+    def __init__(self, start_pos, end_pos, color, width):
+        self.start_pos = start_pos
+        self.end_pos = end_pos
+        self.color = color
+        self.width = width
+
+    def update(self, new_end_pos=None):
+        if new_end_pos:
+            self.end_pos = new_end_pos  # Update end position if needed
+
+    def draw(self, screen):
+        pygame.draw.line(screen, self.color, self.start_pos, self.end_pos, self.width)
+
+
 
 class DiamondHead:
     def __init__(self, player):
         self.image = DIAMOND_HEAD
-        self.original_image = self.image.copy()  # Keep the original image for rotation
         self.rect = self.image.get_rect()
-        self.player = player  # Store reference to the player
+        self.player = player  # Reference to the player
         self.rect.x = SCREEN_WIDTH // 2
-        self.rect.y = 0  # Start at the top of the segment
-        self.speed = 6  # Speed of the enemy
-        self.health = 400  # Set initial health
+        self.rect.y = 0  # Start at the top
+        self.speed = 5  # Movement speed
+        self.health = 2500  # Predator's health
         self.shoot_timer = 0
         self.laser_timer = 0
-        self.shoot_interval = 60  # Time between shots in frames
-        #self.bullets = []
-        self.explosion = None  # Explosion attribute
-        self.is_dead = False  # Flag to mark the enemy as dead
-        self.angle = 0
-        self.bounce_distance = 4
-        self.bullets = pygame.sprite.Group()
-        self.has_ice_bullet = random.choice([True, False])  
-        self.missiles = []
-        self.missile_interval = 20
-
-        self.laser_cooldown = 200  # Cooldown duration in ms
-        self.laser_fire_duration = 1000  # Fire duration in ms
-        self.laser_active = False  # Is laser currently active?
-        self.last_laser_fire_time = 0  # 
+        self.bullets = []
+        self.laser_active = False  # Indicates if the laser is active
+        self.laser_cooldown = 500  # Time between laser activations
+        self.laser_duration = 300  # How long the laser stays active
+        self.laser_color = ICE_LASER_COLOR  # Color from const.py
+        self.lasers = []  # List to store active lasers
+        self.predator_bullet_interval = 40  # Time interval for firing predator bullets
+        self.attack_cooldown = 100000  # Cooldown for moving downwards to attack
+        self.last_attack_time = 0  # Timer for moving on y-axis to attack
+        self.original_y = self.rect.y  # Store the initial y position
+        self.attack_time = 0  # Track if predator is currently in attack mode
+        self.is_attacking = False
+        self.explosion = None  # Explosion instance, initialized to None
+        self.is_dead = False  # Track if the predator is dead
+        self.mask = pygame.mask.from_surface(self.image)
 
 
     def update(self):
-        current_time = pygame.time.get_ticks()  
-
+        # Handle explosion if the predator is dead
         if self.is_dead:
             if self.explosion:
                 self.explosion.update()
                 if self.explosion.done:
-                    return  # Stop updating if explosion is done
-            return  # Skip further update if the enemy is dead
-        
-        # Calculate the angle to the player
-        dx = self.player.rect.centerx - self.rect.centerx
-        dy = self.player.rect.centery - self.rect.centery
-        self.angle = math.atan2(dy, dx)
-        
-        # Update the position based on the angle
-        self.rect.x += math.cos(self.angle) * self.speed
-        #self.rect.y += math.sin(self.angle) * self.speed
-        
-        if self.rect.top < 0:
-            self.rect.top = 0
-        if self.rect.bottom > SCREEN_HEIGHT-400:
-            self.rect.bottom = SCREEN_HEIGHT-400
-        
-        
-        # Update bullets
-        for bullet in self.bullets:
-            bullet.update()
-            if self.player.rect.colliderect(bullet.rect):
-                self.player.health -= 5
-                self.bullets.remove(bullet)
-            
-            if bullet.rect.bottom < 0:
-                self.bullets.remove(bullet)
+                    return  # Explosion is complete; stop updates for this predator
+            return  # Skip further updates while explosion is active
 
-        # missile updated
-        for missile in self.missiles[:]:  # Use [:] to safely remove items during iteration
-            missile.update()
-
-            # Collision with player
-            if missile.rect.colliderect(self.player.rect):
-                self.player.health -= 10  # Or any damage value you want
-                self.missiles.remove(missile)
-                continue
-
-            # Collision with pet (optional)
-            if hasattr(self.player, "pet") and missile.rect.colliderect(self.player.pet.rect):
-                self.player.pet.health -= 10
-                self.missiles.remove(missile)
-                continue
-
-            # Out of screen
-            if missile.rect.bottom < 0:
-                self.missiles.remove(missile)
-
-        # Handle shooting
-        self.shoot_timer += 1
-        if self.shoot_timer >= self.shoot_interval:
-            self.launch()
-            self.shoot_timer = 0
-        
-        """if self.shoot_timer >= self.missile_interval:
-            self.launch()
-            self.shoot_timer = 0"""
-
-        # Check if health is depleted
+        # Check if health is depleted and trigger explosion
         if self.health <= 0:
             self.trigger_explosion()
+            return
 
-        # Fire the laser weapon if it's time
+        # Handle movement on the x-axis to track the player
+        self.rect.x += (self.player.rect.centerx - self.rect.centerx) * 0.05
+
+        # Update lasers to follow the predator's movement
+        if self.laser_active:
+            self.update_lasers()
+
+        # Handle laser activation and deactivation
         self.laser_timer += 1
-        #print(self.laser_timer)
-        if self.laser_timer >= 300:
-            self.fire_laser()
-            if self.laser_timer >= 400:
-                self.laser_timer = 0
-                self.laser_active = False
+        if not self.laser_active and self.laser_timer >= self.laser_cooldown:
+            self.activate_laser()
+            self.laser_timer = 0
+
+        if self.laser_active and self.laser_timer >= self.laser_duration:
+            self.deactivate_laser()
+
+        if not self.laser_active:
+            self.shoot_timer += 1
+            if self.shoot_timer >= self.predator_bullet_interval:
+                self.shoot_predator_bullet()
+                self.shoot_timer = 0
+
+        # Handle other mechanics
+        self.handle_attack()
+        for bullet in self.bullets:
+            bullet.update()
+
+        for bullet in self.bullets[:]:  # Iterate safely
+            bullet.update()
+
+            # ✅ Collision with player
+            if bullet.rect.colliderect(self.player.rect):
+                self.player.health -= 5
+                self.bullets.remove(bullet)
+                continue
+
+            # ✅ Collision with pet
+            if hasattr(self.player, "pet"):
+                pet = self.player.pet
+
+                if pet.shield_active:
+                    # Shield area
+                    shield_rect = pygame.Rect(
+                        pet.rect.centerx - pet.shield_radius,
+                        pet.rect.centery - pet.shield_radius,
+                        pet.shield_radius * 2,
+                        pet.shield_radius * 2
+                    )
+
+                    if bullet.rect.colliderect(shield_rect):
+                        self.bullets.remove(bullet)
+                        continue  # Blocked by shield, no damage
+
+                if bullet.rect.colliderect(pet.rect):
+                    pet.health -= 5
+                    self.bullets.remove(bullet)
+                    continue
+
+            # ✅ Remove if off screen
+            if bullet.rect.top > SCREEN_HEIGHT or bullet.rect.bottom < 0:
+                self.bullets.remove(bullet)
+
+
+
+
+    def update_(self):
+        # Handle movement on the x-axis to track the player
+        self.rect.x += (self.player.rect.centerx - self.rect.centerx) * 0.05  # Smoothly track player x-axis
+
+        print(f"Health : {self.health}")
+        if self.health <= 0 and not self.is_dead:
+            print("Died")
+            self.trigger_explosion()
+
+        # Update lasers to follow the predator's movement
+        if self.laser_active:
+            self.update_lasers()
+
+        # Handle laser activation and deactivation
+        self.laser_timer += 1
+        if not self.laser_active and self.laser_timer >= self.laser_cooldown:
+            self.activate_laser()
+            self.laser_timer = 0
+
+        if self.laser_active and self.laser_timer >= self.laser_duration:
+            self.deactivate_laser()
+
+        if not self.laser_active:
+            self.shoot_timer += 1
+            if self.shoot_timer >= self.predator_bullet_interval:
+                self.shoot_predator_bullet()
+                self.shoot_timer = 0
+
+        if self.is_dead or self.health < 0:
+            print("Explosion frames loaded:", len(LIST_OF_EXPLOSION_IMAGE))
+            if self.explosion:
+                self.explosion.update()
+                if self.explosion.done:
+                    return
+            return
+                
+        # Update other mechanics
+        self.handle_attack()
+        for bullet in self.bullets:
+            bullet.update()
+
+
+    def trigger_explosion(self):
+        if not self.explosion:
+            self.explosion = Explosion(self.rect.centerx, self.rect.centery, scale=2.5)
+            self.bullets.clear()
+            self.is_dead = True
+
+
+
+    def handle_attack(self):
+        """Handles predator moving down to attack and returning to its original position."""
         
-    def fire_laser(self):
-        """Activate the laser weapon and manage its state."""
+        if self.is_attacking:
+            self.attack_time += 1
+
+            # Move predator down to the screen height for 200 frames
+            if self.attack_time <= 200:
+                self.rect.y += 5  # Move down
+                if self.rect.y >= SCREEN_HEIGHT - self.rect.height:  # If predator reaches the screen bottom
+                    self.rect.y = SCREEN_HEIGHT - self.rect.height  # Ensure it doesn't go beyond the screen
+
+            # After 200 frames, move back up to the original position
+            elif self.attack_time > 200 and self.rect.y > self.original_y:
+                self.rect.y -= 5  # Move up to the original position
+
+            # Stop attacking once back in the original position
+            if self.rect.y <= self.original_y:
+                self.rect.y = self.original_y  # Ensure it's exactly at the original position
+                self.attack_time = 0  # Reset attack time
+                self.is_attacking = False  # End attack mode
+        else:
+            # Initiate attack every `attack_cooldown`
+            if pygame.time.get_ticks() - self.last_attack_time >= self.attack_cooldown:
+                self.is_attacking = True  # Start attacking
+                self.last_attack_time = pygame.time.get_ticks()  # Reset cooldown timer
+
+
+
+
+    def shoot_predator_bullet(self):
+        """Fire the predator bullet."""
+        bullet = PredatorBullet(x=self.rect.centerx, y=self.rect.centery, images=PREDATOR_BULLET_IMAGES)
+        self.bullets.append(bullet)
+
+
+    def activate_laser_(self):
+        """Activate the laser attack."""
         self.laser_active = True
-        # Set the laser duration
-        self.last_laser_fire_time = pygame.time.get_ticks()
+
+    def activate_laser(self):
+        """Activate the laser attack."""
+        self.laser_active = True
+        # Create new laser beams aligned with the predator's current position
+        spacing = 40  # Distance between lasers
+        self.lasers = [
+            Laser((self.rect.centerx, self.rect.centery), (self.rect.centerx, SCREEN_HEIGHT), self.laser_color, 4),
+        ]
+
+    def deactivate_laser(self):
+        """Deactivate the laser attack."""
+        self.laser_active = False
+        self.lasers = []  # Clear active lasers
+
+
+
+    def deactivate_laser_(self):
+        """Deactivate the laser attack."""
+        self.laser_active = False
+
 
     def draw_laser(self, screen):
         """Draw the laser beam when active."""
@@ -134,55 +254,29 @@ class DiamondHead:
             # Handle damage or interactions with the player
             self.check_laser_hits_targets()
 
+    def draw_laser(self, screen):
+        """Draw the lasers if active."""
+        for laser in self.lasers:
+            laser.draw(screen)
 
-
-    def trigger_explosion(self):
-        """Trigger the explosion immediately and mark the enemy as dead"""
-        if not self.explosion:
-            self.explosion = Explosion(self.rect.centerx, self.rect.centery)
-            self.is_dead = True  # Set the flag to indicate the enemy is dead
-
-
-    def triple_shoot(self):
-        # Fire three bullets: one straight, and two at ±45 degrees
-        angles = [self.angle, self.angle + math.radians(25), self.angle - math.radians(25)]
-        
-        for angle in angles:
-            bullet = DecepticonBullet(self.rect.centerx, self.rect.centery, angle, color=YELLOW)
-            self.bullets.add(bullet)
-
-    """def triple_shoot(self):
-        bullet = DecepticonBullet(self.rect.centerx, self.rect.centery, angle, color=YELLOW)
-        self.bullets.add(bullet)"""
 
     
-    def launch(self):
-        #missile = ImageEnemyBullet(self.rect.centerx, self.rect.centery, self.angle)
-        missile = AnimatedBullet(self.rect.centerx, self.rect.centery, self.angle, images=ANIMATED_BULLET_IMAGES)
-        self.missiles.append(missile)
-
     def draw(self, screen):
-        for bullet in self.bullets:
-            bullet.draw(screen)
+        """Draw the predator, its bullets, lasers, and explosion (if dead)."""
         
-        for missile in self.missiles:
-            missile.draw(screen)
-        
-        self.draw_laser(screen)
-            
-        if self.explosion:
-            self.explosion.draw(screen)
-            if self.explosion.done:
-                return  # Stop drawing if explosion is done
+        # ✅ If dead, only draw explosion and return
+        if self.is_dead:
+            if self.explosion:
+                self.explosion.draw(screen)
+            return
+
+        # 🟢 If alive, draw predator sprite and other stuff
         screen.blit(self.image, self.rect)
 
-        # Handle damage or interactions with the player
-        if self.rect.colliderect(self.player.rect):
-            self.player.health -= 1  # Example: Decrease player health when hit by the laser
+        for bullet in self.bullets:
+            bullet.draw(screen)
 
-        # Check for collision with the pet (if pet exists)
-        if hasattr(self.player, 'pet') and self.rect.colliderect(self.player.pet.rect):
-            self.player.pet.health -= 1  # Decrease pet health if hit by the laser
+        self.draw_laser(screen)
 
         # Draw health bar
         if self.health > 0:
@@ -191,45 +285,41 @@ class DiamondHead:
             health_bar_x = self.rect.centerx - health_bar_width // 2
             health_bar_y = self.rect.top - 5
 
-            # Draw the background of the health bar
             pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
-            # Draw the current health of the enemy
-            pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 400) * health_bar_width, health_bar_height))
+            pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 2500) * health_bar_width, health_bar_height))
 
-    
+
+
     def collide(self, bullet):
+        """Handle collision with bullets."""
         if self.rect.colliderect(bullet.rect):
-            self.health -= 5  # Reduce health for each collision
+            self.health -= 10  # Reduce health for each collision
             return True
         return False
     
-    def bounce(self):
-        """Bounce backward upon collision."""
-        # Calculate the direction to move backward from the player
-        dx = self.player.rect.centerx - self.rect.centerx
-        dy = self.player.rect.centery - self.rect.centery
-        distance = math.hypot(dx, dy)
-        if distance == 0:
-            distance = 1  # Prevent division by zero
-        
-        # Normalize the direction
-        move_x = (dx / distance) * self.bounce_force
-        move_y = (dy / distance) * self.bounce_force
-        
-        # Move the scrapper backward
-        self.rect.x -= move_x
-        self.rect.y -= move_y
+    def check_bullet_collisions(self):
+        """Check for collisions between predator bullets and the player."""
+        for bullet in self.bullets:
+            if bullet.rect.colliderect(self.player.rect):
+                self.player.health -= 5  # Decrease player health on bullet hit
+                bullet.kill()  # Remove the bullet after collision
+    
 
-    def collide_player(self, player):
-        if self.rect.colliderect(player.rect):
-            self.bounce(player)
+    def update_lasers(self):
+        """Update the laser positions to follow the predator's movement."""
+        spacing = 40  # Distance between lasers
+        for i, laser in enumerate(self.lasers):
+            if i == 0:  # Left laser
+                laser.start_pos = (self.rect.centerx - spacing, self.rect.centery + 50)
+                laser.end_pos = (self.rect.centerx - spacing, SCREEN_HEIGHT)
+            elif i == 1:  # Center laser
+                laser.start_pos = (self.rect.centerx, self.rect.centery)
+                laser.end_pos = (self.rect.centerx, SCREEN_HEIGHT)
+            elif i == 2:  # Right laser
+                laser.start_pos = (self.rect.centerx + spacing, self.rect.centery + 50)
+                laser.end_pos = (self.rect.centerx + spacing, SCREEN_HEIGHT)
 
-
-
-    def line_rect_collision(self, line_start, line_end, rect):
-        """Check if a line (laser) intersects with a rectangle (target)."""
-        return rect.clipline(line_start, line_end)
-
+                
 
 
     def check_laser_hits_targets(self):
@@ -254,42 +344,3 @@ class DiamondHead:
             if self.line_rect_collision(laser_start_1, laser_end_1, pet.rect) or \
             self.line_rect_collision(laser_start_2, laser_end_2, pet.rect):
                 pet.health -= 1
-
-
-
-
-class DiamondHeadGroup:
-    def __init__(self, player):
-        self.player = player
-        self.enemies = self.create_group()
-        self.spawn_timer = 0
-        self.spawn_interval = 8000  # Frames between each spawn
-
-    def create_group(self):
-        # Shuffle segments and create enemies in segments
-        return [DiamondHead(self.player)]
-    
-
-    def manage_spawn(self):
-        self.spawn_timer += 1
-        if self.spawn_timer >= self.spawn_interval:
-            self.spawn_timer = 0
-            # Remove off-screen and dead enemies, and add new enemies
-            self.enemies = [enemy for enemy in self.enemies if not enemy.is_dead]
-            while len(self.enemies) < 5:
-                self.enemies.append(DiamondHead(self.player))
-
-    
-    def update(self):
-        self.manage_spawn()  # Manage enemy spawning
-        for enemy in self.enemies:
-            enemy.update()
-            # Check if enemy is off-screen
-            if enemy.rect.top > SCREEN_HEIGHT and not enemy.is_dead:
-                self.enemies.remove(enemy)
-                # Optionally: Add new enemies to keep the group size constant
-                self.enemies.append(DiamondHead(self.player))
-
-    def draw(self, screen):
-        for enemy in self.enemies:
-            enemy.draw(screen)
