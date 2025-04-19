@@ -26,7 +26,7 @@ class NewPet(pygame.sprite.Sprite):
         self.laser_color = (232, 81, 94)  # Laser color as specified
         self.laser_width = 5  # Thickness of the laser
         self.laser_length = SCREEN_HEIGHT  # Length of the laser
-        self.laser_damage = 0.1
+        self.laser_damage = 5
         self.laser_bar_full = 100  # Full state of the laser bar
         self.laser_bar = self.laser_bar_full  # Current state of the laser bar
         self.laser_usage_rate = 1  # How fast the laser bar drains
@@ -231,8 +231,8 @@ class NewPet(pygame.sprite.Sprite):
 
         
 
-    def check_laser_collision(self, enemies, laser_start, laser_end):
-        """Check if the laser hits any enemies and reduce their health."""
+    """def check_laser_collision(self, enemies, laser_start, laser_end):
+        Check if the laser hits any enemies and reduce their health.
         for enemy in enemies:
             # Check if the laser line intersects the enemy's rect
             if enemy.rect.clipline(laser_start, laser_end):
@@ -240,7 +240,69 @@ class NewPet(pygame.sprite.Sprite):
 
                 # If enemy's health is zero or less, destroy the enemy
                 if enemy.health <= 0:
-                    enemies.remove(enemy)  # Remove the enemy from the game
+                    enemies.remove(enemy)  # Remove the enemy from the game"""
+    
+    def check_laser_collision(self, enemies, laser_start, laser_end):
+        """Pixel-perfect check if the laser hits any enemies or protectors and reduces their health."""
+        laser_dx = laser_end[0] - laser_start[0]
+        laser_dy = laser_end[1] - laser_start[1]
+        laser_length = int(math.hypot(laser_dx, laser_dy))
+        steps = laser_length
+
+        for enemy in enemies[:]:
+            # Ensure the object has .rect, .mask, and .health
+            if not hasattr(enemy, 'rect') or not hasattr(enemy, 'mask') or not hasattr(enemy, 'health'):
+                continue
+
+            for i in range(steps):
+                check_x = int(laser_start[0] + (laser_dx * i / steps))
+                check_y = int(laser_start[1] + (laser_dy * i / steps))
+
+                offset_x = check_x - enemy.rect.left
+                offset_y = check_y - enemy.rect.top
+
+                if 0 <= offset_x < enemy.rect.width and 0 <= offset_y < enemy.rect.height:
+                    try:
+                        if enemy.mask.get_at((offset_x, offset_y)):
+                            enemy.health -= self.laser_damage
+                            if hasattr(enemy, 'vanish') and enemy.health <= 0:
+                                enemy.vanish()  # protectorShip
+                            elif enemy.health <= 0:
+                                enemies.remove(enemy)  # regular enemy
+                            break
+                    except IndexError:
+                        continue
+
+    """def check_laser_collision(self, enemies, laser_start, laser_end):
+        Pixel-perfect check if the laser hits any enemies and reduce their health
+        laser_dx = laser_end[0] - laser_start[0]
+        laser_dy = laser_end[1] - laser_start[1]
+        laser_length = int(math.hypot(laser_dx, laser_dy))
+        steps = laser_length  # One check per pixel
+
+        for enemy in enemies[:]:  # Copy to allow safe removal
+            if not hasattr(enemy, "mask"):
+                continue  # Skip if enemy has no mask (safety)
+
+            for i in range(steps):
+                # Get the current point along the laser line
+                check_x = int(laser_start[0] + (laser_dx * i / steps))
+                check_y = int(laser_start[1] + (laser_dy * i / steps))
+
+                offset_x = check_x - enemy.rect.left
+                offset_y = check_y - enemy.rect.top
+
+                # Ensure offset is within bounds of the enemy's mask
+                if (0 <= offset_x < enemy.rect.width) and (0 <= offset_y < enemy.rect.height):
+                    try:
+                        if enemy.mask.get_at((offset_x, offset_y)):
+                            enemy.health -= self.laser_damage
+                            if enemy.health <= 0:
+                                enemies.remove(enemy)
+                            break  # Stop checking this enemy after a hit
+                    except IndexError:
+                        continue  # Just in case something slips through"""
+
 
 
     def check_laser_shield_collision(self, laser_start, laser_end):
