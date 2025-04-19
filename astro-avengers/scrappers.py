@@ -19,7 +19,7 @@ class Scrapper:
         self.segment = segment  # Segment that the enemy is restricted to
         self.player = player  # Store reference to the player
         self.rect.x = random.randint(segment.left, segment.right - self.rect.width)
-        self.rect.y = SCREEN_HEIGHT  # Start at the top of the segment
+        self.rect.y = random.randint(-200, -50)  # Start at the top of the segment
         self.speed = 10  # Speed of the enemy
         self.health = 50  # Set initial health
         self.shoot_timer = 0
@@ -30,6 +30,8 @@ class Scrapper:
         self.attack_distance = 50  # Distance within which it attacks the player
         self.attack_damage = 10  # Damage dealt to the player
         self.bounce_force = 60
+        self.entered_screen = False
+        self.mask = pygame.mask.from_surface(self.image)
 
     def rotate_towards(self, target_rect):
         """Calculate the angle to face the target."""
@@ -90,6 +92,12 @@ class Scrapper:
         if self.collide(self.player):
             self.bounce()
 
+        if not self.entered_screen:
+            if self.rect.top >= 0:
+                self.entered_screen = True
+            else:
+                self.rect.y += self.speed  # Move down into the screen
+                return
             
     
     def rotate(self, angle):
