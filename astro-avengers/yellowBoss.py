@@ -16,7 +16,7 @@ class YellowBoss:
         self.rect.x = SCREEN_WIDTH // 2
         self.rect.y = 100  # Start at a fixed position
         self.speed = 4  # Speed of the boss
-        self.health = 50  # Set initial health
+        self.health = 8000  # Set initial health
         self.shoot_timer = 0
         self.shoot_interval = 60  # Time between shots in frames
         self.explosion = None  # Explosion attribute
@@ -39,6 +39,7 @@ class YellowBoss:
         self.last_laser_fire_time = 0  # 
         self.laser_timer = 0
         self.vibration_damage = 10
+        self.mask = pygame.mask.from_surface(self.image)
         # Initialize four protector ships with different angles
         self.protectors = [
             ProtectorShip(self, player, math.radians(45)),   # Right side, protector 1
@@ -246,7 +247,7 @@ class YellowBoss:
             health_bar_y = self.rect.top - 5
 
             pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
-            pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 800) * health_bar_width, health_bar_height))
+            pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 8000) * health_bar_width, health_bar_height))
 
 
 
@@ -278,6 +279,8 @@ class ProtectorShip:
         self.bullets = pygame.sprite.Group()
         self.shoot_interval = 90  # Protector ships shoot less frequently
         self.shoot_timer = random.randint(0, self.shoot_interval)
+        self.mask = pygame.mask.from_surface(self.image)
+
         
 
         # Set initial position based on angle
