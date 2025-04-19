@@ -2,6 +2,7 @@ from const import *
 from bullet import Bullet, ImageEnemyBullet
 from missile import Missile
 import math
+from pet import NewPet
 
 class Player:
     def __init__(self):
@@ -14,10 +15,11 @@ class Player:
         self.life = 3
         self.ammunition = 500
         self.shield = False
-        self.missile_count = 10
+        self.missile_count = 100
         self.health = 100
         self.bullet_type = 0  
         self.missile_type = 0
+        self.pet = NewPet()
         
 
     
