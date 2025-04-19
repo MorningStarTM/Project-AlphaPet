@@ -86,6 +86,8 @@ class DummyEnemyFlight:
         self.bullets = pygame.sprite.Group()
         self.bounce_distance = 4
         self.bounce_force = 0.8
+        self.mask = pygame.mask.from_surface(self.image)
+
 
     def update(self):
         if self.is_dead:
