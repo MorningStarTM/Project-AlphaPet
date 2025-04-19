@@ -45,6 +45,7 @@ class Predator:
         self.is_attacking = False
         self.explosion = None  # Explosion instance, initialized to None
         self.is_dead = False  # Track if the predator is dead
+        self.mask = pygame.mask.from_surface(self.image)
 
 
     def update(self):
@@ -118,12 +119,12 @@ class Predator:
                 self.shoot_predator_bullet()
                 self.shoot_timer = 0
 
-        if self.is_dead:
+        if self.is_dead or self.health < 0:
+            print("Explosion frames loaded:", len(LIST_OF_EXPLOSION_IMAGE))
             if self.explosion:
                 self.explosion.update()
                 if self.explosion.done:
-                    # Explosion animation is complete, mark predator as removable
-                    return  # Stop further updates for the predator
+                    return
             return
                 
         # Update other mechanics
@@ -133,11 +134,11 @@ class Predator:
 
 
     def trigger_explosion(self):
-        """Trigger the explosion immediately and mark the enemy as dead"""
         if not self.explosion:
-            self.explosion = Explosion(self.rect.centerx, self.rect.centery)
+            self.explosion = Explosion(self.rect.centerx, self.rect.centery, scale=2.5)
             self.bullets.clear()
-            self.is_dead = True  # Set the flag to indicate the enemy is dead
+            self.is_dead = True
+
 
 
     def handle_attack(self):
@@ -227,17 +228,20 @@ class Predator:
 
     
     def draw(self, screen):
-        """Draw the predator and its bullets."""
-        screen.blit(self.image, self.rect)
-        for bullet in self.bullets:
-            bullet.draw(screen)
-
+        """Draw the predator, its bullets, lasers, and explosion (if dead)."""
+        
+        # ✅ If dead, only draw explosion and return
         if self.is_dead:
             if self.explosion:
                 self.explosion.draw(screen)
             return
 
-        # Draw the laser beam
+        # 🟢 If alive, draw predator sprite and other stuff
+        screen.blit(self.image, self.rect)
+
+        for bullet in self.bullets:
+            bullet.draw(screen)
+
         self.draw_laser(screen)
 
         # Draw health bar
@@ -247,10 +251,9 @@ class Predator:
             health_bar_x = self.rect.centerx - health_bar_width // 2
             health_bar_y = self.rect.top - 5
 
-            # Draw the background of the health bar
             pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
-            # Draw the current health of the enemy
             pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, (self.health / 2500) * health_bar_width, health_bar_height))
+
 
 
     def collide(self, bullet):
@@ -285,43 +288,3 @@ class Predator:
                 
 
 
-class PredatorGroup:
-    def __init__(self, player):
-        self.player = player
-        self.enemies = self.create_group()
-        self.spawn_timer = 0
-        self.spawn_interval = 8000  # Frames between each spawn
-
-    def create_group(self):
-        # Shuffle segments and create enemies in segments
-        return [Predator(self.player)]
-    
-
-    def manage_spawn(self):
-        self.spawn_timer += 1
-        if self.spawn_timer >= self.spawn_interval:
-            self.spawn_timer = 0
-            # Remove off-screen and dead enemies, and add new enemies
-            self.enemies = [enemy for enemy in self.enemies if not enemy.is_dead]
-            while len(self.enemies) < 5:
-                self.enemies.append(Predator(self.player))
-
-
-    def update(self):
-        self.manage_spawn()  # Manage enemy spawning
-        for enemy in self.enemies[:]:  # Iterate over a copy of the list
-            enemy.update()
-
-            # Remove the predator if it's dead and its explosion is done
-            if enemy.is_dead and enemy.explosion and enemy.explosion.done:
-                self.enemies.remove(enemy)
-
-            # Check if enemy is off-screen
-            elif enemy.rect.top > SCREEN_HEIGHT and not enemy.is_dead:
-                self.enemies.remove(enemy)
-                # Optionally: Add new enemies to keep the group size constant
-                self.enemies.append(Predator(self.player))
-
-    def draw(self, screen):
-        for enemy in self.enemies:
-            enemy.draw(screen)
