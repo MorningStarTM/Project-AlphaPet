@@ -68,6 +68,7 @@ class Doubler:
 
         # Check if health is depleted
         if self.health <= 0:
+            self.is_dead = True
             self.trigger_explosion()
         
         self.maintain_distance_from_player()
@@ -169,16 +170,19 @@ class DoublerGroup:
 
 
     def update(self):
-        print(f"{len(self.enemies)}")
+        dead_count = len(self.enemies)
+        print(dead_count)
         self.manage_spawn()  # Manage enemy spawning
         for enemy in self.enemies:
             enemy.update()
             # Check if enemy is off-screen
             if enemy.rect.top > SCREEN_HEIGHT and not enemy.is_dead:
                 self.enemies.remove(enemy)
-                # Optionally: Add new enemies to keep the group size constant
-                segment = random.choice(self.segments)
-                self.enemies.append(Doubler(self.player, segment))
+            
+        if dead_count == 0:
+            # Optionally: Add new enemies to keep the group size constant
+            segment = random.choice(self.segments)
+            self.enemies.append(Doubler(self.player, segment))
 
     def draw(self, screen):
         for enemy in self.enemies:
