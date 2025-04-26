@@ -23,7 +23,6 @@ class Missile:
 
 
 
-
 class Nuclear_Missile:
     def __init__(self, x, y, flag=None):
         self.image = NUCLEAR_MISSILE_IMAGE
@@ -40,6 +39,7 @@ class Nuclear_Missile:
     
     def draw(self, screen):
         screen.blit(self.image, self.rect)
+
 
 
 class HomingMissile:
