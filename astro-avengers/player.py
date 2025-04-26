@@ -1,6 +1,6 @@
 from const import *
 from bullet import Bullet, ImageEnemyBullet
-from missile import Missile
+from missile import Missile, HomingMissile, Nuclear_Missile
 import math
 from pet import NewPet
 
@@ -12,10 +12,14 @@ class Player:
         self.speed = 5
         self.bullets = []
         self.missiles = []
+        self.nuclear = []
+        self.home_missiles = []
+        self.home_missile_count = 10
         self.life = 3
         self.ammunition = 500
         self.shield = False
         self.missile_count = 100
+        self.nuclear_count = 5
         self.health = 100
         self.bullet_type = 0  
         self.missile_type = 0
@@ -47,6 +51,23 @@ class Player:
             missile = Missile(self.rect.centerx, self.rect.top, self.missile_type)
             self.missiles.append(missile)
             self.missile_count -= 1
+    
+
+    def launch_homing_missile(self, enemies):
+        if self.home_missile_count > 0:
+            h_missile = HomingMissile(self.rect.centerx, self.rect.top, enemies, self.missile_type)
+            self.home_missiles.append(h_missile)
+            self.home_missile_count -= 1
+
+
+    
+    def launch_nuclear(self):
+        if self.nuclear_count != 0:
+            nuclear = Nuclear_Missile(self.rect.centerx, self.rect.top, self.missile_type)
+            self.nuclear.append(nuclear)
+            self.nuclear_count -= 1
+
+
 
     def cycle_bullet_type(self):
         """Cycles through available bullet types"""
@@ -73,6 +94,20 @@ class Player:
             missile.update()
             if missile.rect.bottom < 0:
                 self.missiles.remove(missile)
+
+        
+        for h_missile in self.home_missiles:
+            h_missile.update()
+            if h_missile.rect.bottom < 0:
+                self.home_missiles.remove(h_missile)
+
+        
+        for nuclear in self.nuclear:
+            nuclear.update()
+            if nuclear.rect.bottom < 0:
+                self.nuclear.remove(nuclear)
+
+        
                 
 
 
@@ -82,6 +117,12 @@ class Player:
             bullet.draw(screen)
         for missile in self.missiles:
             missile.draw(screen)
+
+        for h_missile in self.home_missiles:
+            h_missile.draw(screen)
+
+        for nuclear in self.nuclear:
+            nuclear.draw(screen)
 
 
 
