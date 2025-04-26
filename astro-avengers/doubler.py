@@ -163,7 +163,7 @@ class DoublerGroup:
 
         if dead_count >= 2:
             self.enemies = [enemy for enemy in self.enemies if not enemy.is_dead]
-            while len(self.enemies) < 1:
+            while len(self.enemies) < 2:  # <-- instead of <1, now <2
                 segment = random.choice(self.segments)
                 self.enemies.append(Doubler(self.player, segment))
 
@@ -181,8 +181,9 @@ class DoublerGroup:
             
         if dead_count == 0:
             # Optionally: Add new enemies to keep the group size constant
-            segment = random.choice(self.segments)
-            self.enemies.append(Doubler(self.player, segment))
+            while len(self.enemies) < 2:  # <-- instead of <1, now <2
+                segment = random.choice(self.segments)
+                self.enemies.append(Doubler(self.player, segment))
 
     def draw(self, screen):
         for enemy in self.enemies:
