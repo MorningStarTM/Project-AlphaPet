@@ -2,6 +2,7 @@ import pygame
 import random
 import math
 from const import *
+from player import Player
 
 
 LEFT_SEGMENT = pygame.Rect(0, 0, SCREEN_WIDTH // 3, SCREEN_HEIGHT)
@@ -12,12 +13,13 @@ SEGMENTS = [LEFT_SEGMENT, CENTER_SEGMENT, RIGHT_SEGMENT]
 
 
 class Scrapper:
-    def __init__(self, player, segment):
+    def __init__(self, player:Player, segment):
         self.image = SCRAPPER_IMAGE
         self.original_image = self.image.copy()  # Keep the original image for rotation
         self.rect = self.image.get_rect()
         self.segment = segment  # Segment that the enemy is restricted to
         self.player = player  # Store reference to the player
+        self.pet = self.player.pet
         self.rect.x = random.randint(segment.left, segment.right - self.rect.width)
         self.rect.y = random.randint(-200, -50)  # Start at the top of the segment
         self.speed = 10  # Speed of the enemy
@@ -67,9 +69,19 @@ class Scrapper:
                     return  # Stop updating if explosion is done
             return  # Skip further update if the enemy is dead
         
+
+        dist_to_player = math.hypot(self.player.rect.centerx - self.rect.centerx, self.player.rect.centery - self.rect.centery)
+        dist_to_pet = math.hypot(self.pet.rect.centerx - self.rect.centerx, self.pet.rect.centery - self.rect.centery)
+
+        if dist_to_pet < dist_to_player:
+            target = self.pet
+        else:
+            target = self.player
+
+
         # Calculate the angle to the player
-        dx = self.player.rect.centerx - self.rect.centerx
-        dy = self.player.rect.centery - self.rect.centery
+        dx = target.rect.centerx - self.rect.centerx
+        dy = target.rect.centery - self.rect.centery
         angle = math.atan2(dy, dx)
         
         # Update the position based on the angle
@@ -162,8 +174,9 @@ class Scrapper:
 
 
 class ScrapperGroup:
-    def __init__(self, player):
+    def __init__(self, player:Player):
         self.player = player
+        self.pet = self.player.pet
         self.segments = SEGMENTS  # Segments to allocate enemies
         self.enemies = []
         self.spawn_timer = 0
