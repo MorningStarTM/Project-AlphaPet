@@ -32,7 +32,7 @@ class Nuclear_Missile:
         self.rect.centerx = x
         self.rect.bottom = y
         self.speed = 8
-        self.damage = 100
+        self.damage = 8000
     
     def update(self):
         self.rect.y -= self.speed
@@ -43,29 +43,44 @@ class Nuclear_Missile:
 
 
 class HomingMissile:
-    def __init__(self, x, y, enemies, flag=None):
+    def __init__(self, x, y, group_enemies=None, single_enemies=None, flag=None):
         self.image = HOMING_MISSILE_IMAGE if flag != 1 else ARC_MISSILE_IMAGE
         self.original_image = self.image.copy()
         self.rect = self.image.get_rect(center=(x, y))
         self.x, self.y = x, y
         self.speed = 5
         self.angle = 10  # Start facing up
-        self.enemies = enemies
+        self.group_enemies = group_enemies if group_enemies else []  # List of enemy lists
+        self.single_enemies = single_enemies if single_enemies else []  # List of bosses
         self.target = None
         self.explosion = None
         self.active = True
         self.rotation_speed = 6
+        self.damage = 200  # Set default damage (can customize if needed)
 
     def find_nearest_target(self):
         nearest = None
         min_dist = float('inf')
-        for enemy in self.enemies:
-            if hasattr(enemy, "is_dead") and enemy.is_dead:
+
+        # First check group enemies
+        for enemy_list in self.group_enemies:
+            for enemy in enemy_list:
+                if hasattr(enemy, "is_dead") and enemy.is_dead:
+                    continue
+                dist = math.hypot(enemy.rect.centerx - self.x, enemy.rect.centery - self.y)
+                if dist < min_dist:
+                    min_dist = dist
+                    nearest = enemy
+
+        # Then check single enemies (bosses)
+        for boss in self.single_enemies:
+            if hasattr(boss, "is_dead") and boss.is_dead:
                 continue
-            dist = math.hypot(enemy.rect.centerx - self.x, enemy.rect.centery - self.y)
+            dist = math.hypot(boss.rect.centerx - self.x, boss.rect.centery - self.y)
             if dist < min_dist:
                 min_dist = dist
-                nearest = enemy
+                nearest = boss
+
         return nearest
 
     def update(self):
@@ -74,15 +89,17 @@ class HomingMissile:
                 self.explosion.update()
             return
 
-        # Track target
+        # Acquire target
         if not self.target or getattr(self.target, "is_dead", False):
             self.target = self.find_nearest_target()
-            if not self.target:
-                self.y -= self.speed
-                self.rect.center = (self.x, self.y)
-                return
 
-        # Angle to target
+        # If no target, just move straight up
+        if not self.target:
+            self.y -= self.speed
+            self.rect.center = (self.x, self.y)
+            return
+
+        # Rotate toward the target
         dx = self.target.rect.centerx - self.x
         dy = self.target.rect.centery - self.y
         desired_angle = math.degrees(math.atan2(dy, dx))
@@ -90,7 +107,7 @@ class HomingMissile:
         self.angle += max(-self.rotation_speed, min(self.rotation_speed, angle_diff))
         self.angle %= 360
 
-        # Move forward based on current angle
+        # Move forward
         radians = math.radians(self.angle)
         self.x += self.speed * math.cos(radians)
         self.y += self.speed * math.sin(radians)
@@ -101,12 +118,10 @@ class HomingMissile:
         self.rect = self.image.get_rect(center=(self.x, self.y))
 
         # Collision check
-        for enemy in self.enemies:
-            if self.rect.colliderect(enemy.rect):
-                if hasattr(enemy, "health"):
-                    enemy.health -= 50
-                self.trigger_explosion()
-                break
+        if self.rect.colliderect(self.target.rect):
+            if hasattr(self.target, "health"):
+                self.target.health -= self.damage
+            self.trigger_explosion()
 
         # Off-screen cleanup
         if self.x < 0 or self.x > SCREEN_WIDTH or self.y < 0 or self.y > SCREEN_HEIGHT:
