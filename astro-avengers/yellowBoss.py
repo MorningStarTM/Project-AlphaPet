@@ -210,6 +210,21 @@ class YellowBoss:
         distance = math.hypot(self.player.rect.centerx - wave.center[0], 
                               self.player.rect.centery - wave.center[1])
         return distance <= wave.radius  # Collision occurs if distance <= wave radius
+    
+    def collide_missile(self, missile):
+        """Handle collision with bullets."""
+        if self.rect.colliderect(missile.rect):
+            self.health -= missile.damage  # Reduce health for each collision
+            return True
+        return False
+    
+
+    def collide(self, bullet):
+        """Handle collision with bullets."""
+        if self.rect.colliderect(bullet.rect):
+            self.health -= 10  # Reduce health for each collision
+            return True
+        return False
 
     def draw(self, screen):
         self.draw_laser(screen)

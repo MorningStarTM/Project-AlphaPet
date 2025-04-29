@@ -143,6 +143,14 @@ class Doubler:
         return False
     
 
+    def collide_missile(self, missile):
+        """Handle collision with bullets."""
+        if self.rect.colliderect(missile.rect):
+            self.health -= missile.damage  # Reduce health for each collision
+            return True
+        return False
+    
+
 
 
 class DoublerGroup:

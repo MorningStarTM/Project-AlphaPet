@@ -263,6 +263,14 @@ class Predator:
             return True
         return False
     
+
+    def collide_missile(self, missile):
+        """Handle collision with bullets."""
+        if self.rect.colliderect(missile.rect):
+            self.health -= missile.damage  # Reduce health for each collision
+            return True
+        return False
+    
     def check_bullet_collisions(self):
         """Check for collisions between predator bullets and the player."""
         for bullet in self.bullets:

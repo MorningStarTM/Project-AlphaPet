@@ -193,6 +193,13 @@ class DummyEnemyFlight:
             return True
         return False
     
+    def collide_missile(self, missile):
+        """Handle collision with bullets."""
+        if self.rect.colliderect(missile.rect):
+            self.health -= missile.damage  # Reduce health for each collision
+            return True
+        return False
+    
     def bounce(self):
         """Bounce backward upon collision."""
         # Calculate the direction to move backward from the player
