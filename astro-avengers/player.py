@@ -55,7 +55,8 @@ class Player:
 
     def launch_homing_missile(self, enemies):
         if self.home_missile_count > 0:
-            h_missile = HomingMissile(self.rect.centerx, self.rect.top, enemies, self.missile_type)
+            group_enemies, single_enemies = enemies
+            h_missile = HomingMissile(self.rect.centerx, self.rect.top, group_enemies=group_enemies, single_enemies=single_enemies)
             self.home_missiles.append(h_missile)
             self.home_missile_count -= 1
 
