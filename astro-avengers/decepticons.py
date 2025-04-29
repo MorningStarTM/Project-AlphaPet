@@ -120,6 +120,14 @@ class Decepticon:
             return True
         return False
     
+
+    def collide_missile(self, missile):
+        """Handle collision with bullets."""
+        if self.rect.colliderect(missile.rect):
+            self.health -= missile.damage  # Reduce health for each collision
+            return True
+        return False
+    
     def bounce(self):
         """Bounce backward upon collision."""
         # Calculate the direction to move backward from the player
@@ -151,9 +159,22 @@ class DecepticonGroup:
         self.spawn_interval = 600  # Frames between each spawn
 
     def create_group(self):
-        # Shuffle segments and create enemies in segments
+        enemies = []
         random.shuffle(self.segments)
-        return [Decepticon(self.player, self.segments[i % len(self.segments)]) for i in range(3)]
+        while len(enemies) < 3:
+            segment = self.segments[len(enemies) % len(self.segments)]
+            temp_enemy = Decepticon(self.player, segment)
+            if self.is_safe_spawn(temp_enemy.rect.centerx, temp_enemy.rect.centery):
+                enemies.append(temp_enemy)
+        return enemies
+
+    
+
+    def is_safe_spawn(self, x, y, min_distance=300):
+        """Check if the spawn position is a safe distance from the player."""
+        player_center = self.player.rect.center
+        distance = math.hypot(player_center[0] - x, player_center[1] - y)
+        return distance >= min_distance
     
 
     def manage_spawn(self):
@@ -164,7 +185,9 @@ class DecepticonGroup:
             self.enemies = [enemy for enemy in self.enemies if not enemy.is_dead]
             while len(self.enemies) < 5:
                 segment = random.choice(self.segments)
-                self.enemies.append(Decepticon(self.player, segment))
+                temp_enemy = Decepticon(self.player, segment)
+                if self.is_safe_spawn(temp_enemy.rect.centerx, temp_enemy.rect.centery):
+                    self.enemies.append(temp_enemy)
 
     
     def update(self):
