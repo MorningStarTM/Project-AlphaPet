@@ -1,6 +1,7 @@
 #Gaurd Life Ammunation
 from const import *
 import random
+from player import Player
 
 
 class Shield:
@@ -64,20 +65,23 @@ class Ammunition:
 
 
 
-def check_gla_collisions(player, shields, lives, ammunitions):
+def check_gla_collisions(player:Player, shields, lives, ammunitions):
     for shield in shields:
         if player.rect.colliderect(shield.rect):
-            player.shield = True
+            player.shield = 400
             shields.remove(shield)
     
     for life in lives:
         if player.rect.colliderect(life.rect):
-            player.life += 1
-            lives.remove(life)
+            if player.health != 100:
+                player.health += 20
+                lives.remove(life)
+            if player.health > 100:
+                player.health = 100
     
     for ammunition in ammunitions:
         if player.rect.colliderect(ammunition.rect):
-            player.ammunition += 1
+            player.missile_count += 5
             ammunitions.remove(ammunition)
 
     
