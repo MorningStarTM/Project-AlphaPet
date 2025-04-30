@@ -94,6 +94,18 @@ class Doubler:
             # Keep the enemy within the segment after adjusting
             self.rect.clamp_ip(self.segment)
 
+    
+    def check_bullet_collisions(self):
+        """Check for collisions between predator bullets and the player."""
+        for bullet in self.bullets:
+            if bullet.rect.colliderect(self.player.rect):
+                if self.player.shield > 0:
+                    self.player.health -= 2.5  # Decrease player health on bullet hit
+                    bullet.kill()  # Remove the bullet after collision
+                else:
+                    self.player.health -= 2.5
+                    bullet.kill()
+
 
     def trigger_explosion(self):
         """Trigger the explosion immediately and mark the enemy as dead"""

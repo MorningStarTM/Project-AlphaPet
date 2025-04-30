@@ -200,6 +200,17 @@ class DummyEnemyFlight:
             return True
         return False
     
+    def check_bullet_collisions(self):
+        """Check for collisions between predator bullets and the player."""
+        for bullet in self.bullets:
+            if bullet.rect.colliderect(self.player.rect):
+                if self.player.shield > 0:
+                    self.player.health -= 2.5  # Decrease player health on bullet hit
+                    bullet.kill()  # Remove the bullet after collision
+                else:
+                    self.player.health -= 2.5
+                    bullet.kill()
+    
     def bounce(self):
         """Bounce backward upon collision."""
         # Calculate the direction to move backward from the player

@@ -72,6 +72,18 @@ class Decepticon:
         if self.health <= 0:
             self.trigger_explosion()
 
+    
+    def check_bullet_collisions(self):
+        """Check for collisions between predator bullets and the player."""
+        for bullet in self.bullets:
+            if bullet.rect.colliderect(self.player.rect):
+                if self.player.shield > 0:
+                    self.player.health -= 2.5  # Decrease player health on bullet hit
+                    bullet.kill()  # Remove the bullet after collision
+                else:
+                    self.player.health -= 2.5
+                    bullet.kill()
+
 
     def trigger_explosion(self):
         """Trigger the explosion immediately and mark the enemy as dead"""
@@ -183,7 +195,7 @@ class DecepticonGroup:
             self.spawn_timer = 0
             # Remove off-screen and dead enemies, and add new enemies
             self.enemies = [enemy for enemy in self.enemies if not enemy.is_dead]
-            while len(self.enemies) < 5:
+            while len(self.enemies) < 3:
                 segment = random.choice(self.segments)
                 temp_enemy = Decepticon(self.player, segment)
                 if self.is_safe_spawn(temp_enemy.rect.centerx, temp_enemy.rect.centery):

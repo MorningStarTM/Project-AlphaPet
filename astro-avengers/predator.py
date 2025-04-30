@@ -95,7 +95,7 @@ class Predator:
         # Handle movement on the x-axis to track the player
         self.rect.x += (self.player.rect.centerx - self.rect.centerx) * 0.05  # Smoothly track player x-axis
 
-        print(f"Health : {self.health}")
+        
         if self.health <= 0 and not self.is_dead:
             print("Died")
             self.trigger_explosion()
@@ -120,7 +120,6 @@ class Predator:
                 self.shoot_timer = 0
 
         if self.is_dead or self.health < 0:
-            print("Explosion frames loaded:", len(LIST_OF_EXPLOSION_IMAGE))
             if self.explosion:
                 self.explosion.update()
                 if self.explosion.done:
@@ -275,8 +274,12 @@ class Predator:
         """Check for collisions between predator bullets and the player."""
         for bullet in self.bullets:
             if bullet.rect.colliderect(self.player.rect):
-                self.player.health -= 5  # Decrease player health on bullet hit
-                bullet.kill()  # Remove the bullet after collision
+                if self.player.shield > 0:
+                    self.player.health -= 2.5  # Decrease player health on bullet hit
+                    bullet.kill()  # Remove the bullet after collision
+                else:
+                    self.player.health -= 2.5
+                    bullet.kill()
     
 
     def update_lasers(self):
