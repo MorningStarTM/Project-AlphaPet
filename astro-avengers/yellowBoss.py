@@ -156,7 +156,7 @@ class YellowBoss:
     def trigger_explosion(self):
         """Trigger the explosion immediately and mark the boss as dead"""
         if not self.explosion:
-            self.explosion = Explosion(self.rect.centerx, self.rect.centery)
+            self.explosion = Explosion(self.rect.centerx, self.rect.centery, scale=3.0)
             self.is_dead = True
             self.laser_active = False  # 🚨 Turn off laser on death
 
@@ -320,11 +320,17 @@ class ProtectorShip:
             if bullet.rect.bottom < 0:
                 self.bullets.remove(bullet)
 
+        if self.health <= 0:
+            self.trigger_explosion()
+
     def take_damage(self, damage):
         """Reduce protector's health and check if it should be destroyed."""
         self.health -= damage
         if self.health <= 0:
             self.vanish()
+    
+    def trigger_explosion(self):
+        self.explosion = Explosion(self.rect.centerx, self.rect.centery, scale=1.0)
 
     def vanish(self):
         """Vanish the protector."""
