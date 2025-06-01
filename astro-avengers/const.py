@@ -53,8 +53,8 @@ PREDATOR_BULLET_IMAGES = [pygame.image.load('assets\\bullet\\p1.png'),
                         pygame.image.load('assets\\bullet\\p4.png')]
 
 SHIELD_IMAGE = pygame.image.load("assets\\GLA\\shield.png")
-LIFE_IMAGE = pygame.image.load("assets\\GLA\\ammunition.png")
-AMMUNITION_IMAGE = pygame.image.load("assets\\GLA\\life.png")
+LIFE_IMAGE = pygame.image.load("assets\\GLA\\gasoline.png")
+AMMUNITION_IMAGE = pygame.image.load("assets\\GLA\\ammunition.png")
 
 
 HUD_WIDTH = 200  # Width of the HUD section

@@ -168,7 +168,7 @@ class DecepticonGroup:
         self.segments = SEGMENTS  # Segments to allocate enemies
         self.enemies = self.create_group()
         self.spawn_timer = 0
-        self.spawn_interval = 600  # Frames between each spawn
+        self.spawn_interval = 2600  # Frames between each spawn
 
     def create_group(self):
         enemies = []
