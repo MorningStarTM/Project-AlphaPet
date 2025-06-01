@@ -42,6 +42,14 @@ class Scrapper:
         angle_to_target = math.degrees(math.atan2(dy, dx)) - 90  # Adjust for image orientation
         self.angle = angle_to_target % 360
 
+    
+    def trigger_explosion(self):
+        if not self.explosion:
+            from explosion import Explosion  # Import here to avoid circular import
+            self.explosion = Explosion(self.rect.centerx, self.rect.centery)
+            self.is_dead = True
+
+
     def move(self):
         """Move the scrapper according to its velocity and angle."""
         radians = math.radians(self.angle)
@@ -246,6 +254,7 @@ class ScrapperGroup:
     def update(self):
         self.manage_spawn()  # Manage enemy spawning
         
+        self.enemies = [e for e in self.enemies if e.health > 0]
         for enemy in self.enemies:
             enemy.update()
             # Check if enemy is off-screen

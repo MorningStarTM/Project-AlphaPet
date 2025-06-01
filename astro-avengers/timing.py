@@ -6,9 +6,9 @@ from gla import Shield, Life, Ammunition
 
 class GLATimer:
     def __init__(self):
-        self.spawn_interval_shield = 500  # frames
+        self.spawn_interval_shield = 800  # frames
         self.spawn_interval_life = 600    # frames
-        self.spawn_interval_ammunition = 400  # frames
+        self.spawn_interval_ammunition = 300  # frames
 
         self.shield_timer = 0
         self.life_timer = 0
