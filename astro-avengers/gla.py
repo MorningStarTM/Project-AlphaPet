@@ -2,6 +2,7 @@
 from const import *
 import random
 from player import Player
+from pet import NewPet
 
 
 class Shield:
@@ -65,22 +66,24 @@ class Ammunition:
 
 
 
-def check_gla_collisions(player:Player, shields, lives, ammunitions):
+def check_gla_collisions(player:Player, pet:NewPet, shields, lives, ammunitions):
     for shield in shields:
-        if player.rect.colliderect(shield.rect):
+        if player.rect.colliderect(shield.rect) or pet.rect.colliderect(shield.rect):
             player.shield = 400
             shields.remove(shield)
     
     for life in lives:
-        if player.rect.colliderect(life.rect):
+        if player.rect.colliderect(life.rect) or pet.rect.colliderect(life.rect):
             if player.health != 100:
                 player.health += 20
+                pet.health += 5
                 lives.remove(life)
-            if player.health > 100:
+            if player.health > 100 or pet.health > 100:
                 player.health = 100
+                pet.health = 100
     
     for ammunition in ammunitions:
-        if player.rect.colliderect(ammunition.rect):
+        if player.rect.colliderect(ammunition.rect) or pet.rect.colliderect(ammunition.rect):
             player.missile_count += 5
             ammunitions.remove(ammunition)
 
