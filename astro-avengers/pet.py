@@ -268,7 +268,7 @@ class NewPet(pygame.sprite.Sprite):
                             if hasattr(enemy, 'vanish') and enemy.health <= 0:
                                 enemy.vanish()  # protectorShip
                             elif enemy.health <= 0:
-                                enemies.remove(enemy)  # regular enemy
+                                enemies.remove(enemy)  # Mark as dead, group will remove!
                             break
                     except IndexError:
                         continue
