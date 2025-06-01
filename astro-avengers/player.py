@@ -17,10 +17,10 @@ class Player:
         self.home_missile_count = 10
         self.life = 3
         self.ammunition = 500
-        self.shield = False
-        self.missile_count = 100
+        self.shield = 100
+        self.missile_count = 10
         self.nuclear_count = 5
-        self.health = 100
+        self.health = 50
         self.bullet_type = 0  
         self.missile_type = 0
         self.pet = NewPet()
