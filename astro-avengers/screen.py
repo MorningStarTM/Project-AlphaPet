@@ -501,6 +501,8 @@ def main4():
             if enemy.collide_player(player):
                 return True
 
+        # Handle shield collision with enemy bullets
+        pet.handle_shield_collision(enemies)
 
         # Update and draw the background
         screen.update_screen()
@@ -598,6 +600,9 @@ def main5():
                 if enemy.collide(missile):
                     player.missiles.remove(missile)
                     break
+        
+        # Handle shield collision with enemy bullets
+        pet.handle_shield_collision(enemy_group)
         
         # Clear screen
         screen.screen.fill((0, 0, 0))
@@ -922,7 +927,10 @@ def main_doubler():
 
         for enemy in enemy_group.enemies:
             enemy.check_bullet_collisions() if hasattr(enemy, "check_bullet_collisions") else None
-            pet.handle_enemy_laser_collision(enemy.bullets) if hasattr(pet, "handle_enemy_laser_collision") else None
+            # pet.handle_enemy_laser_collision(enemy.bullets) if hasattr(pet, "handle_enemy_laser_collision") else None  # Commented out: bullets don't have start_pos/end_pos
+
+        # Handle shield collision with enemy bullets
+        pet.handle_shield_collision(enemy_group)
 
         # Draw everything
         screen.screen.fill((0, 0, 0))
@@ -1068,6 +1076,8 @@ def main_decepticon():
                     player.nuclear.remove(nuclear)
                     break
 
+        # Handle shield collision with enemy bullets
+        pet.handle_shield_collision(d_group)
 
         # Draw everything
         screen.screen.fill((0, 0, 0))
@@ -1237,12 +1247,15 @@ def main_combined():
             for enemy in enemy_group:
                 if hasattr(enemy, "check_bullet_collisions"):
                     enemy.check_bullet_collisions()
-                if hasattr(pet, "handle_enemy_laser_collision"):
-                    pet.handle_enemy_laser_collision(enemy.bullets)
+                # if hasattr(pet, "handle_enemy_laser_collision"):
+                #     pet.handle_enemy_laser_collision(enemy.bullets)  # Commented out: bullets don't have start_pos/end_pos
 
-        for boss in single_enemies:
-            if hasattr(pet, "handle_enemy_laser_collision") and hasattr(boss, "bullets"):
-                pet.handle_enemy_laser_collision(boss.bullets)
+        # for boss in single_enemies:
+        #     if hasattr(pet, "handle_enemy_laser_collision") and hasattr(boss, "bullets"):
+        #         pet.handle_enemy_laser_collision(boss.bullets)  # Commented out: bullets don't have start_pos/end_pos
+
+        # Handle shield collision with enemy bullets
+        pet.handle_shield_collision(decepticon_group)
 
         # Clear screen
         screen.screen.fill((0, 0, 0))
@@ -1349,10 +1362,11 @@ def main_gla():
 
 
 
+def play_game():
+    final_manager()
 
 
-
-def main_manager():
+def final_manager():
     pygame.init()
     clock = pygame.time.Clock()
 
