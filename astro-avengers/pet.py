@@ -13,7 +13,7 @@ class NewPet(pygame.sprite.Sprite):
         self.vel = 0
         self.rotation_vel = 3
         self.angle = 0
-        self.START_POS = (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT)
+        self.START_POS = (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT-50)
         self.x, self.y = self.START_POS
         self.acceleration = 0.1
         self.radar_visible = True
