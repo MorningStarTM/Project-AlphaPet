@@ -1,6 +1,6 @@
 # enemy_manager.py
 import pygame
-
+from timing import UniverseTimer
 
 class EnemyManager:
     def __init__(self, player):
@@ -13,9 +13,11 @@ class EnemyManager:
         from enemyColony import DiamondHead
         from yellowBoss import YellowBoss
         from predator import Predator
+        from enemyflight import EnemyGroup
 
         # Register all types (can add more in the future)
         self.groups = {
+            "enemyflight": EnemyGroup(player),
             "scrappers": ScrapperGroup(player),
             "doublers": DoublerGroup(player),
             "decepticons": DecepticonGroup(player)
@@ -44,6 +46,7 @@ class EnemyManager:
         self.timeline.sort(key=lambda x: x["time"])
         self.start_time = pygame.time.get_ticks()  # milliseconds
         self.timeline_pointer = 0
+        self.universe_timer = UniverseTimer()
 
     def spawn_wave(self, group_name):
         """Activate a wave (group) by name."""
@@ -62,11 +65,20 @@ class EnemyManager:
                now_seconds >= self.timeline[self.timeline_pointer]["time"]):
             self.timeline[self.timeline_pointer]["action"]()
             self.timeline_pointer += 1
+        
+        for group_name in self.active_groups:
+            grp = self.groups[group_name]
+            if hasattr(grp, "update"):
+                grp.update()
 
-        for group in self.active_groups:
-            self.groups[group].update()
-        for boss in self.active_bosses:
-            self.bosses[boss].update()
+        for boss_name in self.active_bosses:
+            boss = self.bosses[boss_name]
+            if hasattr(boss, "update"):
+                boss.update()
+
+        # keep your timer logic last (or first, doesn’t matter)
+        self.universe_timer.update(self)
+
 
     def draw(self, screen):
         for group in self.active_groups:
