@@ -28,10 +28,24 @@ class SimpleCommandUI:
         screen.blit(msg, (60, 60))
 
         cmd_label = self.font.render("Command:", True, (255, 255, 0))
-        screen.blit(cmd_label, (60, 95))
+        label_x, label_y = 60, 95
+        screen.blit(cmd_label, (label_x, label_y))
 
-        cmd_val = self.font.render(self.text if self.text else "(empty)", True, (255, 255, 255))
-        screen.blit(cmd_val, (170, 95))
+        # value starts right after label (with padding)
+        pad = 12
+        value_x = label_x + cmd_label.get_width() + pad
+
+        value_text = self.text.strip() if self.text.strip() else "(empty)"
+        value_color = (255, 255, 255) if self.text.strip() else (180, 180, 180)
+        cmd_val = self.font.render(value_text, True, value_color)
+
+        box_w = (SCREEN_WIDTH - 80) - (value_x - 40) - 40
+        box_h = cmd_val.get_height() + 10
+        box_y = label_y - 5
+        pygame.draw.rect(screen, (40, 40, 40), (value_x - 8, box_y, box_w, box_h))
+        pygame.draw.rect(screen, (120, 120, 120), (value_x - 8, box_y, box_w, box_h), 1)
+
+        screen.blit(cmd_val, (value_x, label_y))
 
         hint = self.font.render("Typing: backspace to delete, ENTER to confirm.", True, (180, 180, 180))
         if self.mode == "typing":
