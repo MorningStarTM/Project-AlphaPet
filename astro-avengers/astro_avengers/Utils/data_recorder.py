@@ -49,7 +49,9 @@ class DataRecorder:
         img_path = os.path.join(self.images_dir, img_name)
 
         # PNG saving (fast enough for small frames, but can be heavy at 60fps)
-        pygame.image.save(screen, img_path)
+        small = pygame.transform.smoothscale(screen, (512, 512))
+
+        pygame.image.save(small, img_path)
 
         # store relative path so dataset is portable
         rel_path = os.path.relpath(img_path, self.out_dir)
