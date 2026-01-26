@@ -4,7 +4,7 @@ from astro_avengers.const import *
 from astro_avengers.pet import NewPet
 from astro_avengers.Utils.data_recorder import DataRecorder
 from astro_avengers.Utils.command_ui import SimpleCommandUI
-
+from astro_avengers.Utils.action_encode import MultiBinaryActionCodec
 
 class Arena:
     """
@@ -24,7 +24,9 @@ class Arena:
 
         self.pet = NewPet()  # starts at your START_POS
         self.recorder = DataRecorder()
-        self.recorder.save_every_n_frames = 4
+        self.recorder.save_every_n_frames = 2
+        self.action_codec = MultiBinaryActionCodec(["LEFT", "RIGHT", "UP", "DOWN", "SHOOT", "SHIELD", "LASER"])
+
 
     def _draw_status(self, command_text):
         # top-left HUD
@@ -51,6 +53,7 @@ class Arena:
         command_text = ""
 
         cmd_ui = SimpleCommandUI(self.big_font)
+        shield_toggle_latch = False
 
         while running:
             dt_ms = self.clock.tick(self.fps)
@@ -92,16 +95,33 @@ class Arena:
 
             # ========== collecting mode ==========
             keys = pygame.key.get_pressed()
+            # human keys -> multi-binary vector
+            action_vec = self.action_codec.encode_from_keys(keys, pygame)
+            self.action_codec.apply_to_pet(self.pet, action_vec)
+
 
             # Pet control (same style you already use in screen.py) :contentReference[oaicite:4]{index=4}
-            if keys[pygame.K_LEFT]:
+            if keys[pygame.K_a]:
                 self.pet.rotate(left=True)
-            if keys[pygame.K_RIGHT]:
+            if keys[pygame.K_d]:
                 self.pet.rotate(right=True)
-            if keys[pygame.K_UP]:
+            if keys[pygame.K_w]:
                 self.pet.move_forward()
-            if keys[pygame.K_DOWN]:
+            if keys[pygame.K_s]:
                 self.pet.move_backward()
+            if keys[pygame.K_LCTRL]:
+                self.pet.shoot()
+
+            # pet shield toggle (single press)
+            if keys[pygame.K_c]:
+                if not shield_toggle_latch:
+                    self.pet.toggle_shield()
+                shield_toggle_latch = True
+            else:
+                shield_toggle_latch = False
+
+            # pet laser hold
+            self.pet.fire_laser(bool(keys[pygame.K_x]))
 
             # update pet internal systems (bullets/shield timers etc.)
             self.pet.update()
@@ -111,7 +131,7 @@ class Arena:
             self._draw_status(command_text)
 
             # --- NOW record (and screenshot) ---
-            self.recorder.record(self.screen.copy(), self.pet, keys, dt_ms)
+            self.recorder.record(self.screen.copy(), self.pet, action_vec, dt_ms)
 
             pygame.display.flip()
 
@@ -263,14 +283,27 @@ class Arena:
             keys = pygame.key.get_pressed()
 
             # pet control (same as navigation)
-            if keys[pygame.K_LEFT]:
+            if keys[pygame.K_a]:
                 self.pet.rotate(left=True)
-            if keys[pygame.K_RIGHT]:
+            if keys[pygame.K_d]:
                 self.pet.rotate(right=True)
-            if keys[pygame.K_UP]:
+            if keys[pygame.K_w]:
                 self.pet.move_forward()
-            if keys[pygame.K_DOWN]:
+            if keys[pygame.K_s]:
                 self.pet.move_backward()
+            if keys[pygame.K_LCTRL]:
+                self.pet.shoot()
+
+            # pet shield toggle (single press)
+            if keys[pygame.K_c]:
+                if not shield_toggle_latch:
+                    self.pet.toggle_shield()
+                shield_toggle_latch = True
+            else:
+                shield_toggle_latch = False
+
+            # pet laser hold
+            self.pet.fire_laser(bool(keys[pygame.K_x]))
 
             self.pet.update()
 
@@ -312,10 +345,89 @@ class Arena:
                 saved_path = self.recorder.save_csv()
                 print("Saved trajectory:", saved_path)
                 running = False
+    
+
+    def freestyle(self):
+        """
+        Free-style trajectory collection:
+        - Empty map
+        - Only pet
+        - No command input
+        - Start recording immediately
+        - ENTER = finish + save CSV
+        - ESC   = quit without save
+        """
+        import pygame
+
+        running = True
+
+        # Start an episode with a fixed label (no command)
+        # If you updated start_episode to accept action_buttons, use the commented line instead.
+        self.recorder.start_episode("FREE_STYLE")
+        # self.recorder.start_episode("FREE_STYLE", action_buttons=self.action_codec.buttons)
+
+        # toggle latch for shield (single press)
+        shield_toggle_latch = False
+
+        while running:
+            dt_ms = self.clock.tick(self.fps)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        # quit without save
+                        running = False
+                    elif event.key == pygame.K_RETURN:
+                        # finish + save
+                        saved_path = self.recorder.save_csv()
+                        print("Saved trajectory:", saved_path)
+                        running = False
+
+            # ======= controls (human -> action_vec) =======
+            keys = pygame.key.get_pressed()
+
+            # encode keys into multi-binary vector
+            action_vec = self.action_codec.encode_from_keys(keys, pygame)
+            action_vec = self.action_codec.sanitize(action_vec)
+
+            # apply movement + shoot (if codec calls those)
+            self.action_codec.apply_to_pet(self.pet, action_vec)
+
+            # ---- handle toggle/hold actions that are NOT pure "hold" ----
+            # SHIELD toggle (single press on C)
+            if keys[pygame.K_c]:
+                if not shield_toggle_latch:
+                    self.pet.toggle_shield()
+                shield_toggle_latch = True
+            else:
+                shield_toggle_latch = False
+
+            # LASER hold (X) - always set True/False each frame
+            self.pet.fire_laser(bool(keys[pygame.K_x]))
+
+            # update pet internal systems
+            self.pet.update()
+
+            # ======= render =======
+            self.screen.fill((0, 0, 0))
+            self.pet.draw(self.screen)
+
+            # small status text
+
+            # record (screen + state + action_vec)
+            self.recorder.record(self.screen.copy(), self.pet, action_vec, dt_ms)
+
+            pygame.display.flip()
+
+        pygame.quit()
 
 
 
 if __name__ == "__main__":
     arena = Arena(fps=60)
     #arena.navigation()
-    arena.catch_gla()
+    #arena.catch_gla()
+    arena.freestyle()
