@@ -243,11 +243,9 @@ def main():
                         player.fire_bullet()
                     elif event.key == pygame.K_SPACE:
                         player.launch_missile()
-                    elif event.key == pygame.K_LCTRL:
-                        pet.shoot()
-                    elif event.key == pygame.K_TAB:
+                    elif event.key == pygame.K_PAGEDOWN:
                         player.cycle_bullet_type()
-                    elif event.key == pygame.K_q:
+                    elif event.key == pygame.K_PAGEUP:
                         player.cycle_missile_type()
 
         keys = pygame.key.get_pressed()
@@ -255,28 +253,30 @@ def main():
         if not paused and not game_over:
             # -------- movement/input --------
             dx = dy = 0
-            if keys[pygame.K_a]:
+            if keys[pygame.K_LEFT]:
                 dx -= player.speed
-            if keys[pygame.K_d]:
+            if keys[pygame.K_RIGHT]:
                 dx += player.speed
-            if keys[pygame.K_w]:
+            if keys[pygame.K_UP]:
                 dy -= player.speed
-            if keys[pygame.K_s]:
+            if keys[pygame.K_DOWN]:
                 dy += player.speed
             player.move(dx, dy)
 
             # pet rotate/move
-            if keys[pygame.K_LEFT]:
+            if keys[pygame.K_a]:
                 pet.rotate(left=True)
-            if keys[pygame.K_RIGHT]:
+            if keys[pygame.K_d]:
                 pet.rotate(right=True)
-            if keys[pygame.K_UP]:
+            if keys[pygame.K_w]:
                 pet.move_forward()
-            if keys[pygame.K_DOWN]:
+            if keys[pygame.K_s]:
                 pet.move_backward()
+            if keys[pygame.K_LCTRL]:
+                pet.shoot()
 
             # pet shield toggle (single press)
-            if keys[pygame.K_b]:
+            if keys[pygame.K_c]:
                 if not shield_toggle_latch:
                     pet.toggle_shield()
                 shield_toggle_latch = True
@@ -284,7 +284,7 @@ def main():
                 shield_toggle_latch = False
 
             # pet laser hold
-            pet.fire_laser(bool(keys[pygame.K_m]))
+            pet.fire_laser(bool(keys[pygame.K_x]))
 
             # -------- update --------
             player.update()
