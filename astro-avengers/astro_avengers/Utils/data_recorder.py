@@ -57,17 +57,21 @@ class DataRecorder:
         rel_path = os.path.relpath(img_path, self.out_dir)
         return rel_path
 
-    def record(self, screen: pygame.Surface, pet, keys, dt_ms: int):
+    def record(self, screen: pygame.Surface, pet, action_vec, dt_ms: int):
         """
-        Record a single timestep, including observation image (optionally every N frames).
+        action_vec: multi-binary vector (0/1) in the same order as action_codec.buttons
         """
         self.frame_idx += 1
         t_rel = time.time() - self.start_unix
 
-        act_left = 1 if keys[pygame.K_LEFT] else 0
-        act_right = 1 if keys[pygame.K_RIGHT] else 0
-        act_forward = 1 if keys[pygame.K_UP] else 0
-        act_backward = 1 if keys[pygame.K_DOWN] else 0
+        # action_vec assumed: [LEFT, RIGHT, UP, DOWN, SHOOT, SHIELD, LASER]
+        act_left     = int(action_vec[0]) if len(action_vec) > 0 else 0
+        act_right    = int(action_vec[1]) if len(action_vec) > 1 else 0
+        act_forward  = int(action_vec[2]) if len(action_vec) > 2 else 0
+        act_backward = int(action_vec[3]) if len(action_vec) > 3 else 0
+        act_shoot    = int(action_vec[4]) if len(action_vec) > 4 else 0
+        act_shield   = int(action_vec[5]) if len(action_vec) > 5 else 0
+        act_laser    = int(action_vec[6]) if len(action_vec) > 6 else 0
 
         obs_img = ""
         if (self.frame_idx % self.save_every_n_frames) == 0:
@@ -79,20 +83,18 @@ class DataRecorder:
             "frame": self.frame_idx,
             "t_rel_sec": f"{t_rel:.6f}",
             "dt_ms": int(dt_ms),
-
-            # observation reference
             "obs_img": obs_img,
-
-            # state (optional but useful)
             "x": float(pet.x),
             "y": float(pet.y),
             "angle_deg": float(pet.angle),
 
-            # action
             "left": act_left,
             "right": act_right,
             "forward": act_forward,
             "backward": act_backward,
+            "shoot": act_shoot,
+            "shield": act_shield,
+            "laser": act_laser,
         }
         self.rows.append(row)
 
